@@ -108,14 +108,19 @@
     return vs.find((v) => /zh[-_]CN|Chinese|中文/i.test(v.lang + v.name)) || null;
   }
 
+  function dogName() {
+    return window.WR_DOG_NAME || '狗';
+  }
+
   function renderLines() {
     elLines.innerHTML = '';
     lines.forEach((ln, i) => {
       const li = document.createElement('li');
-      li.className = 'radio__line radio__line--' + (ln.who === '狗' ? 'dog' : 'you');
+      const isDog = ln.who === '狗';
+      li.className = 'radio__line radio__line--' + (isDog ? 'dog' : 'you');
       li.dataset.i = i;
       li.innerHTML =
-        `<span class="radio__who">${ln.who}</span>` +
+        `<span class="radio__who">${isDog ? dogName() : ln.who}</span>` +
         `<span class="radio__text">${ln.text}</span>` +
         (ln.cite ? `<span class="radio__cite">${citeOf(ln.cite)}</span>` : '');
       elLines.appendChild(li);

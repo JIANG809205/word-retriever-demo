@@ -535,9 +535,32 @@
   ];
   let dogSay = 0;
 
+  const SIDE_LINES = [
+    '（它叫发呆，正看着你）',
+    '发呆：汪？',
+    '发呆：这一页我也看过了。',
+    '发呆：他说的，我不同意。'
+  ];
+  let sideSay = 0;
+
   const dogline = document.createElement('div');
   dogline.className = 'dogline';
   document.body.appendChild(dogline);
+
+  if (castSide) {
+    castSide.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bark(0.7);
+      dogline.textContent = SIDE_LINES[sideSay++ % SIDE_LINES.length];
+      const r = castSide.getBoundingClientRect();
+      dogline.style.left = Math.max(12, r.left - 20) + 'px';
+      dogline.style.top = (r.top - 36) + 'px';
+      dogline.classList.add('is-in');
+      clearTimeout(dogline._t);
+      dogline._t = setTimeout(() => dogline.classList.remove('is-in'), 2400);
+    });
+  }
+
 
   castMain.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -572,6 +595,13 @@
   }
 
   /* ───────── 固定形象 + 换一只 ───────── */
+  /* 素材里每只狗都有名字 */
+  const DOG_NAMES = {
+    beagle: 'NONO', corgi: '知豆', shiba: '知豆', fluff: '发呆', puff: '发呆',
+    wink: '沃克', puppy: '小老实', cloud: '小云', smug: '得意', chef: '小厨',
+    study: '苦读', devil: '小坏', mischief: '淘气', pug: '巴哥', sleepy: '困困',
+    tilt: '歪头', glasses: '眼镜', peek: '探头', pinkear: '粉耳', lineup: '群像'
+  };
   const DOGS = ['beagle', 'corgi', 'fluff', 'wink', 'puppy', 'cloud', 'smug', 'chef'];
   let chosenDog = 'beagle';
   try { chosenDog = localStorage.getItem('wr-dog') || 'beagle'; } catch (_) {}
@@ -581,6 +611,8 @@
     chosenDog = name;
     try { localStorage.setItem('wr-dog', name); } catch (_) {}
     castImg.setAttribute('src', 'assets/dogs/' + name + '.png');
+    window.WR_DOG_NAME = DOG_NAMES[name] || name;
+    document.documentElement.dataset.dogName = window.WR_DOG_NAME;
     if (animate) {
       castMain.classList.remove('is-swap');
       void castMain.offsetWidth;

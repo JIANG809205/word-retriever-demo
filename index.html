@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>拾字狗 WordRetriever — 一场五幕的私人播客</title>
+<script>document.documentElement.classList.add('js');</script>
+<meta name="description" content="把散落在书和电影里的想法叼回来，做成一期只给你一个人听的播客。">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<svg class="svg-defs" aria-hidden="true">
+  <filter id="torn">
+    <feTurbulence type="fractalNoise" baseFrequency="0.014 0.022" numOctaves="4" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="crumpleBall">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03 0.04" numOctaves="4" seed="5" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="crumple0">
+    <feTurbulence type="fractalNoise" baseFrequency="0.021 0.028" numOctaves="4" seed="3" result="n"/>
+    <feDisplacementMap class="dm" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="crumple1">
+    <feTurbulence type="fractalNoise" baseFrequency="0.019 0.031" numOctaves="4" seed="11" result="n"/>
+    <feDisplacementMap class="dm" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="crumple2">
+    <feTurbulence type="fractalNoise" baseFrequency="0.024 0.026" numOctaves="4" seed="21" result="n"/>
+    <feDisplacementMap class="dm" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<div class="paper" aria-hidden="true"></div>
+<div class="paper-tile" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"><span class="cursor__dot"></span></div>
+<div class="curtain" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"></div>
+
+<!-- ───────── 常驻角色 ───────── -->
+<div class="cast" aria-hidden="true">
+  <div class="cast__cloud" id="castCloud"><i></i><i></i><i></i><i></i></div>
+  <figure class="cast__side" id="castSide"><img src="assets/dogs/fluff.png" alt="" draggable="false"></figure>
+  <figure class="cast__main" id="castMain"><img id="castImg" src="assets/dogs/beagle.png" alt="" draggable="false"></figure>
+  <div class="bubble" id="bubble">
+    <p class="bubble__main" id="bubbleMain"></p>
+    <p class="bubble__side" id="bubbleSide"></p>
+  </div>
+</div>
+
+<!-- ───────── 顶栏 ───────── -->
+<header class="topbar">
+  <a class="brand" href="#" data-go="0">
+    <span class="brand__cn">拾字狗</span>
+    <span class="brand__en">WordRetriever</span>
+  </a>
+  <button class="programme-btn" id="programmeBtn">
+    <span class="programme-btn__lines"><i></i><i></i><i></i></span>节目单
+  </button>
+  <button class="sound" id="sound" aria-pressed="false" title="打开声音">
+    <span class="sound__bars"><i></i><i></i><i></i></span>
+    <span class="sound__txt">静音</span>
+  </button>
+</header>
+
+<!-- ───────── 舞台 ───────── -->
+<main class="stage" id="stage">
+
+  <!-- 序幕 -->
+  <section class="act" data-act="0" data-pose="prologue">
+    <div class="act__inner act__inner--center">
+      <p class="kicker">序幕 · 灯暗下来</p>
+      <h1 class="hero__title">
+        <span>你今天</span>
+        <span>叼回了 <em>3</em> 个球</span>
+      </h1>
+      <p class="lede">
+        从你划过的书、看过的电影里。<br>
+        每一片都能点回原处——原句、原页码、原时间码。
+      </p>
+      <p class="hero__meta">
+        <span>0 条痕迹</span><span>0 个主题</span><span>跨 2 种媒介</span>
+      </p>
+      <button class="next-btn" data-go="1">
+        <span>第一幕 · 碎片</span>
+        <em>↓</em>
+      </button>
+      <button class="paperball" id="paperball" aria-label="展开纸团">
+        <span class="paperball__ball"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 第一幕：碎片 -->
+  <section class="act" data-act="1" data-pose="scraps">
+    <div class="act__inner">
+      <header class="act__head">
+        <p class="act__no">Act I</p>
+        <h2>碎片</h2>
+        <p class="act__sub" id="scrapsSub">书里划的、电影里听到的，被归到了同一个问题下面。</p>
+      </header>
+      <div class="scraps__grid"></div>
+      <p class="act__hint">点卡片看这个主题的全部痕迹 · 点右下角时长听一期</p>
+    </div>
+  </section>
+
+  <!-- 第二幕：星图 -->
+  <section class="act" data-act="2" data-pose="map">
+    <div class="act__inner act__inner--split">
+      <div class="map__text">
+        <p class="act__no">Act II</p>
+        <h2>星图</h2>
+        <p class="act__sub">每个点是你留下的一道痕迹；<br>每条线，是同一个问题在不同地方出现。</p>
+        <p class="map__stat"></p>
+        <p class="map__tip">把鼠标放到点上，看它跟谁是一伙的。</p>
+      </div>
+      <div class="map__canvas" id="mapCanvas">
+        <svg viewBox="0 0 660 440" role="img" aria-label="个人知识星图">
+          <g class="links"></g><g class="nodes"></g>
+        </svg>
+        <span class="map__cap">FIG. 01 · 个人知识星图</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第三幕：电台 -->
+  <section class="act" data-act="3" data-pose="radio">
+    <div class="act__inner">
+      <header class="act__head">
+        <p class="act__no">Act III</p>
+        <h2>电台</h2>
+        <p class="act__sub">三种材料，一期播客。每条观点都能点回原处。</p>
+      </header>
+      <div class="episodes" id="episodes"></div>
+      <p class="act__hint">脚本由模型写，声音由系统合成——离线、免费。</p>
+    </div>
+  </section>
+
+  <!-- 尾声 -->
+  <section class="act" data-act="4" data-pose="about">
+    <div class="act__inner act__inner--center">
+      <p class="act__no">Epilogue</p>
+      <h2 class="about__big">推荐系统一直在解决「你可能喜欢什么」。<br>没人解决「你一直在想什么」。</h2>
+      <p class="about__body">
+        拾字狗把你在书和电影里留下的痕迹放进同一个语义空间，
+        找出你反复在问的那几个问题，再做成一期只给你一个人听的播客。
+        它不是摘要工具——摘要处理一篇，它处理你。
+      </p>
+      <footer class="foot">
+        <p>拾字狗 WordRetriever · 五幕</p>
+        <p class="foot__note">角色素材来自本人收集的插画参考图，仅作课程演示使用。</p>
+      </footer>
+      <button class="next-btn next-btn--bare" data-go="0"><em>↑</em><span>回到序幕</span></button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ───────── 幕间导航 ───────── -->
+<nav class="actnav" aria-label="幕间导航">
+  <button data-go="-1" title="上一幕">↑</button>
+  <span class="actnav__label" id="actLabel">序幕</span>
+  <button data-go="1" title="下一幕">↓</button>
+</nav>
+
+<!-- ───────── 节目单 ───────── -->
+<div class="programme" id="programme" aria-hidden="true">
+  <div class="programme__paper"></div>
+  <div class="programme__inner">
+    <p class="programme__kicker">Programme</p>
+    <h2>拾字狗 · 五幕</h2>
+    <p class="programme__note">建议戴耳机。用节目单或 ↑↓ 换幕。</p>
+    <ol class="programme__list">
+      <li><button data-go="0"><b>序幕</b><span>灯暗下来</span></button></li>
+      <li><button data-go="1"><b>Act I · 碎片</b><span>你今天叼回来的那几张纸</span></button></li>
+      <li><button data-go="2"><b>Act II · 星图</b><span>你的痕迹长成了一张网</span></button></li>
+      <li><button data-go="3"><b>Act III · 电台</b><span>三种材料，一期播客</span></button></li>
+      <li><button data-go="4"><b>尾声</b><span>它到底在解决什么</span></button></li>
+    </ol>
+    <button class="programme__close" id="programmeClose">×</button>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/data.local.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/detail.js"></script>
+<script src="assets/js/player.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

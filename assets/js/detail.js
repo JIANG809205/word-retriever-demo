@@ -27,6 +27,7 @@
         <p class="sheet__no"></p>
         <h4 class="sheet__title"></h4>
         <p class="sheet__meta"></p>
+        <button class="sheet__rename" id="sheetRename" title="给这个问题改个名字">✎</button>
         <button class="sheet__close" aria-label="关闭">×</button>
         <div class="sheet__tools">
           <div class="sheet__chips">
@@ -101,9 +102,38 @@
     document.body.classList.add('sheet-open');
   }
 
+  let curCard = -1;
+
+  function doRename() {
+    if (curCard < 0) return;
+    const c = D.cards[curCard];
+    if (!c) return;
+    const cur = String(c.question || '').replace(/[「」]/g, '');
+    const v = window.prompt('给它换个名字（留空则恢复原名）：', cur);
+    if (v === null) return;
+    const name = v.trim();
+    try {
+      const key = 'wr-name-' + encodeURIComponent(c._origQ || c.question);
+      if (!name) {
+        localStorage.removeItem(key);
+        c.question = c._origQ || c.question;
+      } else {
+        c.question = '「' + name.replace(/[「」]/g, '') + '」';
+        localStorage.setItem(key, c.question);
+      }
+    } catch (_) {}
+    elTitle.textContent = c.question;
+    const btn = document.getElementById('sheetRename');
+    if (btn) { btn.textContent = '✓'; setTimeout(() => { btn.textContent = '✎'; }, 1200); }
+  }
+
+  const renameBtn = document.getElementById('sheetRename');
+  if (renameBtn) renameBtn.addEventListener('click', (e) => { e.stopPropagation(); doRename(); });
+
   function openCard(i) {
     const c = D.cards[i];
     if (!c) return;
+    curCard = i;
     const ids = c.all_ids || (c.traces || []).map((t) => t.id);
     let list = ids.map((id) => byId[id]).filter(Boolean);
     const head = new Set((c.traces || []).map((t) => t.id));

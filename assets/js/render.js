@@ -28,6 +28,15 @@
   const DOGS = ['corgi', 'puppy', 'wink', 'fluff', 'beagle', 'sleepy'];
   const dogAt = (i) => `assets/dogs/${DOGS[i % DOGS.length]}.png`;
 
+  // 用户改过的名字（localStorage），先记原始名再覆盖
+  try {
+    D.cards.forEach((c) => {
+      c._origQ = c.question;
+      const v = localStorage.getItem('wr-name-' + encodeURIComponent(c._origQ));
+      if (v) c.question = v;
+    });
+  } catch (_) {}
+
   // 换一批：按 sessionStorage 里的偏移轮换主题
   const OFF = Number(sessionStorage.getItem('wr-off') || 0) || 0;
   if (OFF > 0 && D.cards.length > 1) {

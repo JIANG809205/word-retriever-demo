@@ -1413,3 +1413,14 @@ body[data-act="4"] .srcbadge{ display:none; }
 }
 .shuffle:hover{ border-color:var(--rust); color:var(--rust); }
 .hero__meta span::before{ content:"◦"; color:var(--mustard); margin-right:6px; }
+/* 详情层：改名按钮 */
+.sheet__rename{
+  position:absolute; right:54px; top:16px; width:30px; height:30px;
+  background:none; border:1px solid var(--line); border-radius:50%;
+  font-size:13px; line-height:1; color:var(--ink-soft); cursor:pointer;
+  transition:border-color .2s, color .2s;
+}
+.sheet__rename:hover{ border-color:var(--rust); color:var(--rust); }
+/* 详情层裁边兜底 */
+.sheet{ overflow:hidden; }
+.sheet .sheet__inner{ max-width:min(560px,94vw); right:0; }

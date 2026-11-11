@@ -19,12 +19,14 @@
     <div class="radio__paper"></div>
     <div class="radio__stage">
       <div class="turntable" aria-hidden="true">
+        <div class="turntable__ring"></div>
         <div class="turntable__plinth"></div>
         <div class="vinyl">
           <div class="vinyl__label"><span></span></div>
         </div>
         <div class="tonearm"><i></i></div>
         <div class="turntable__knob"></div>
+        <div class="turntable__ui"><i></i><b>REC</b></div>
       </div>
       <div class="radio__body">
         <header class="radio__head">
@@ -228,7 +230,7 @@
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const scrap = btn.closest('.scrap');
-      const all = [...document.querySelectorAll('.scrap')];
+      const cardIdx = Number(btn.closest('.scrap').dataset.card || 0);
       open(all.indexOf(scrap));
     });
   });

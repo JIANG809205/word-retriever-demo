@@ -739,3 +739,157 @@ body.sheet-open{ overflow:hidden; }
   transition:opacity .3s, transform .3s;
 }
 .dogline.is-in{ opacity:1; transform:none; }
+/* ===========================================================
+   碎片带（横向滑动）
+   =========================================================== */
+.act__inner--drift{ overflow:hidden; display:flex; flex-direction:column; }
+.act__head--tight{ margin-bottom:clamp(14px,2vh,26px); flex:none; }
+
+.drift{
+  position:relative; flex:1; min-height:0;
+  margin:0 calc(-1 * clamp(20px,4vw,56px));
+  cursor:grab;
+}
+.drift:active{ cursor:grabbing; }
+.drift__track{
+  position:absolute; left:0; top:45%; height:0;
+  display:flex; align-items:center; will-change:transform;
+}
+.drift__ruler{
+  position:absolute; left:0; right:0; bottom:6%;
+  height:1px;
+  background:repeating-linear-gradient(90deg,
+    var(--line) 0 1px, transparent 1px 26px);
+  opacity:.55; pointer-events:none;
+}
+
+/* 带子上的每张纸 */
+.scrap--lane{
+  position:relative; flex:none;
+  width:clamp(210px,19vw,272px);
+  margin-right:clamp(18px,2.2vw,34px);
+  padding:64px 18px 16px;
+  transform:rotate(var(--tilt,0deg));
+  transition:transform .45s cubic-bezier(.2,.8,.2,1), filter .45s;
+}
+.scrap--lane:nth-child(4n+1){ --tilt:-2.2deg; }
+.scrap--lane:nth-child(4n+2){ --tilt:1.6deg; }
+.scrap--lane:nth-child(4n+3){ --tilt:-1.1deg; }
+.scrap--lane:nth-child(4n+4){ --tilt:2.4deg; }
+.scrap--lane.scrap--low{ translate:0 34px; }
+.scrap--lane.scrap--high{ translate:0 -30px; }
+.scrap--lane:hover{ transform:rotate(0deg) translateY(-10px) scale(1.03); z-index:5; }
+
+.scrap--lane .scrap__paper{
+  filter:url(#torn);
+  box-shadow:0 14px 26px -16px rgba(60,44,26,.5);
+}
+.scrap--lane .scrap__dog{
+  position:absolute; width:96px; left:50%; top:-56px; margin-left:-48px;
+  filter:
+    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+    drop-shadow(0 8px 12px rgba(60,44,26,.22));
+}
+.scrap--lane:nth-child(3n+2) .scrap__dog{ width:112px; margin-left:-56px; top:-64px; }
+.scrap--lane .scrap__no{ font-size:9.5px; }
+.scrap--lane blockquote{
+  font-size:13px; line-height:1.75; margin-top:8px;
+  padding-left:11px; border-left:2px solid var(--mustard);
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+}
+.scrap--lane .scrap__cite{ font-size:9.5px; margin-top:7px; padding-left:13px; }
+.scrap--lane .scrap__foot{ margin-top:12px; padding-top:10px; gap:5px; }
+.scrap--lane .tag{ font-size:9px; padding:2px 7px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.scrap--lane .play{ font-size:9.5px; }
+
+/* 纸团展开：球 -> 纸 */
+@keyframes unfoldIn{
+  0%{
+    opacity:0;
+    transform:translateY(26px) scale(.34) rotate(-16deg);
+    border-radius:50% 46% 54% 48%;
+    filter:blur(1.2px);
+  }
+  38%{
+    opacity:1;
+    transform:translateY(4px) scale(.92) rotate(4deg);
+    border-radius:42% 58% 46% 54%;
+    filter:blur(0);
+  }
+  64%{ transform:translateY(0) scale(1.04) rotate(-2deg); border-radius:14px; }
+  100%{ transform:none; border-radius:0; }
+}
+.scrap--lane.is-born{
+  animation:unfoldIn .92s cubic-bezier(.22,.9,.24,1) both;
+}
+.scrap--lane.is-born .scrap__paper{
+  animation:unfoldShade .92s ease both;
+}
+@keyframes unfoldShade{
+  0%{ opacity:.65; transform:scale(.96); }
+  60%{ opacity:1; transform:scale(1.01); }
+  100%{ opacity:1; transform:none; }
+}
+
+/* 序幕的纸团 -> 带子 */
+.unfold-hint{
+  display:inline-flex; align-items:center; gap:10px; margin-top:26px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; color:var(--ink-faint);
+}
+.unfold-hint i{
+  width:16px; height:16px; border-radius:46% 54% 52% 48%;
+  background:repeating-conic-gradient(from 12deg at 46% 44%,
+    #f7f1e2 0 20deg, #ddd2ba 20deg 34deg);
+  box-shadow:inset 2px 2px 4px rgba(120,100,70,.35); display:block;
+}
+
+/* ===========================================================
+   电台：唱机 + 耳机
+   =========================================================== */
+.turntable__ring{
+  position:absolute; inset:-13%; border-radius:50%;
+  border:1px dashed rgba(43,38,32,.18);
+  pointer-events:none;
+}
+.turntable__ui{
+  position:absolute; left:50%; bottom:-15%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:6px;
+  padding:3px 8px; border-radius:999px;
+  background:rgba(251,246,232,.9); border:1px solid var(--line);
+  font-family:var(--mono); font-size:7.5px; letter-spacing:.1em; color:var(--ink-soft);
+  white-space:nowrap;
+}
+.turntable__ui i{
+  width:0; height:0; border-left:5px solid var(--rust);
+  border-top:3.5px solid transparent; border-bottom:3.5px solid transparent;
+  display:block; font-style:normal;
+}
+.radio.is-playing .turntable__ui i{
+  width:5px; height:6px; border:0;
+  background:linear-gradient(90deg,var(--rust) 0 1.5px,transparent 1.5px 3.5px,var(--rust) 3.5px 5px);
+}
+
+/* 狗戴耳机 */
+.cast__phones{
+  position:absolute; left:50%; top:-13%; width:58%; margin-left:-29%;
+  z-index:3; pointer-events:none;
+  opacity:0; transform:translateY(6px) rotate(-4deg);
+  transition:opacity .5s, transform .5s;
+}
+.cast__phones.is-in{ opacity:1; transform:none; }
+.cast__phones svg{ width:100%; height:auto; display:block; overflow:visible; }
+.cast__phones .ph-cup{ fill:#2b2620; }
+.cast__phones .ph-pad{ fill:#4a4038; }
+.cast__phones .ph-band{ fill:none; stroke:#2b2620; stroke-width:7; stroke-linecap:round; }
+.cast__main.is-listening img{ animation:breathe 2.4s ease-in-out infinite; }
+/* 星图筛选 */
+.map__filter{ display:flex; gap:7px; margin-top:18px; }
+.map__chip{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:4px 12px; color:var(--ink-soft); cursor:pointer;
+  transition:border-color .2s, color .2s, background .2s;
+}
+.map__chip:hover{ border-color:var(--rust); color:var(--rust); }
+.map__chip.on{ background:var(--ink); border-color:var(--ink); color:var(--card); }

@@ -44,7 +44,16 @@
 <div class="cast" aria-hidden="true">
   <div class="cast__cloud" id="castCloud"><i></i><i></i><i></i><i></i></div>
   <figure class="cast__side" id="castSide"><img src="assets/dogs/fluff.png" alt="" draggable="false"></figure>
-  <figure class="cast__main" id="castMain"><img id="castImg" src="assets/dogs/beagle.png" alt="" draggable="false"></figure>
+  <figure class="cast__main" id="castMain">
+    <svg class="cast__phones" id="castPhones" viewBox="0 0 120 130" aria-hidden="true">
+      <path class="ph-band" d="M22 66 C22 26 98 26 98 66"/>
+      <rect class="ph-cup" x="8"  y="58" width="26" height="34" rx="11"/>
+      <rect class="ph-pad" x="12" y="62" width="18" height="26" rx="8"/>
+      <rect class="ph-cup" x="86" y="58" width="26" height="34" rx="11"/>
+      <rect class="ph-pad" x="90" y="62" width="18" height="26" rx="8"/>
+    </svg>
+    <img id="castImg" src="assets/dogs/beagle.png" alt="" draggable="false">
+  </figure>
   <div class="bubble" id="bubble">
     <p class="bubble__main" id="bubbleMain"></p>
     <p class="bubble__side" id="bubbleSide"></p>
@@ -94,16 +103,19 @@
     </div>
   </section>
 
-  <!-- 第一幕：碎片 -->
+  <!-- 第一幕：碎片带（横向滑动） -->
   <section class="act" data-act="1" data-pose="scraps">
-    <div class="act__inner">
-      <header class="act__head">
+    <div class="act__inner act__inner--drift">
+      <header class="act__head act__head--tight">
         <p class="act__no">Act I</p>
-        <h2>碎片</h2>
-        <p class="act__sub" id="scrapsSub">书里划的、电影里听到的，被归到了同一个问题下面。</p>
+        <h2>碎片带</h2>
+        <p class="act__sub" id="scrapsSub">这一年，你在这条带上留下了这些痕迹。拖一下，让它过去。</p>
       </header>
-      <div class="scraps__grid"></div>
-      <p class="act__hint">点卡片看这个主题的全部痕迹 · 点右下角时长听一期</p>
+      <div class="drift" id="drift">
+        <div class="drift__track" id="driftTrack"></div>
+        <div class="drift__ruler" aria-hidden="true"></div>
+      </div>
+      <p class="act__hint">拖动或滚轮横向滑 · 点一张看这个主题的全部痕迹 · 点右下角时长听一期</p>
     </div>
   </section>
 
@@ -115,6 +127,11 @@
         <h2>星图</h2>
         <p class="act__sub">每个点是你留下的一道痕迹；<br>每条线，是同一个问题在不同地方出现。</p>
         <p class="map__stat"></p>
+        <div class="map__filter" id="mapFilter">
+          <button class="map__chip on" data-med="">全部</button>
+          <button class="map__chip" data-med="书摘">书摘</button>
+          <button class="map__chip" data-med="电影">电影</button>
+        </div>
         <p class="map__tip">把鼠标放到点上，看它跟谁是一伙的。</p>
       </div>
       <div class="map__canvas" id="mapCanvas">

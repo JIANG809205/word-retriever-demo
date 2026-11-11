@@ -22,32 +22,47 @@
     }
   });
 
-  /* ───────── 1. 碎片卡 ───────── */
-  const grid = $('.scraps__grid');
-  if (grid) {
-    grid.innerHTML = '';
-    D.cards.slice(0, 3).forEach((c, i) => {
-      const label = c.title_source === 'seed' || c.title_source === 'llm' ? '问题' : '碎片';
-      const tagSrc = c.dominant_source
-        ? `<span class="tag">${c.dominant_source}</span>` : '';
+  /* ───────── 1. 碎片带 ───────── */
+  const track = $('#driftTrack');
+  if (track) {
+    track.innerHTML = '';
+    // 从每个主题里取一条，凑成一条长长的带子
+    const picks = [];
+    D.cards.slice(0, 3).forEach((c) => {
+      picks.push({ card: c, trace: c.traces[0] });
+    });
+    // 再把全量痕迹按主题轮流铺开，让带子够长
+    const pool = (D.traces || []).slice();
+    let guard = 0;
+    while (picks.length < 22 && pool.length && guard++ < 200) {
+      const t = pool.shift();
+      if (!t) break;
+      let owner = D.cards.find((c) => (c.all_ids || []).includes(t.id));
+      if (!owner) owner = D.cards.find((c) => (c.traces || []).some((x) => x.id === t.id));
+      if (!owner) continue;
+      if (picks.some((p) => p.trace.id === t.id)) continue;
+      picks.push({ card: owner, trace: t });
+    }
+
+    picks.forEach((p, i) => {
+      const t = p.trace;
       const el = document.createElement('article');
-      el.className = 'scrap';
-      el.setAttribute('data-tilt', '');
+      el.className = 'scrap scrap--lane' + (i % 4 === 1 ? ' scrap--low' : i % 4 === 3 ? ' scrap--high' : '');
+      el.dataset.id = t.id;
+      el.dataset.card = String(D.cards.indexOf(p.card));
       el.innerHTML = `
         <div class="scrap__paper"></div>
         <img class="scrap__dog" src="${dogAt(i)}" alt="" draggable="false">
-        <p class="scrap__no">${label} 0${i + 1}</p>
-        <h3 class="scrap__q">${c.question}</h3>
-        <blockquote>${c.quote}</blockquote>
-        <p class="scrap__cite">${c.cite}</p>
+        <p class="scrap__no">${t.medium} · ${String(i + 1).padStart(2, '0')}</p>
+        <blockquote>${t.text}</blockquote>
+        <p class="scrap__cite">${[t.source, t.locator].filter(Boolean).join(' · ')}</p>
         <div class="scrap__foot">
-          ${tagSrc}
-          <span class="tag">同主题 ${c.size} 条</span>
+          <span class="tag">${p.card.question.replace(/[「」]/g, '').slice(0, 12)}</span>
           <button class="play" data-play>
-            <span class="play__bars"><i></i><i></i><i></i></span>${c.episode.duration}
+            <span class="play__bars"><i></i><i></i><i></i></span>${p.card.episode.duration}
           </button>
         </div>`;
-      grid.appendChild(el);
+      track.appendChild(el);
     });
   }
 
@@ -85,6 +100,7 @@
       c.appendChild(t);
       c.setAttribute('data-id', n.id);
       if (n.cluster != null) c.setAttribute('data-cluster', n.cluster);
+      if (n.medium) c.setAttribute('data-med', n.medium);
       nodesG.appendChild(c);
     });
   }

@@ -169,7 +169,7 @@
     const scrap = e.target.closest('.scrap');
     if (scrap && !e.target.closest('[data-play]')) {
       resetTools();
-      openCard($$('.scrap').indexOf(scrap));
+      openCard(Number(scrap.dataset.card || 0));
       return;
     }
 
@@ -215,6 +215,24 @@
       c.addEventListener('mouseenter', () => highlight(c.dataset.cluster));
       c.addEventListener('mouseleave', () => highlight(null));
     });
+
+    // 按媒介筛选
+    const chips = $$('.map__chip');
+    chips.forEach((b) => b.addEventListener('click', () => {
+      chips.forEach((x) => x.classList.toggle('on', x === b));
+      const med = b.dataset.med;
+      circles.forEach((c) => {
+        const on = !med || c.dataset.med === med;
+        c.classList.toggle('is-dim', !on);
+        c.classList.remove('is-hot');
+      });
+      paths.forEach((p) => p.classList.remove('is-hot'));
+      if (med) {
+        paths.forEach((p) => p.classList.add('is-dim'));
+      } else {
+        paths.forEach((p) => p.classList.remove('is-dim'));
+      }
+    }));
   }
 
   /* ───────── 深链 ───────── */

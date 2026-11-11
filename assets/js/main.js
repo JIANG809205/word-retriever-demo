@@ -14,10 +14,10 @@
   /* ───────── 每一幕的配置 ───────── */
   const ACTS = [
     { label: '序幕',    dog: 'beagle', cx: 0,    cy: 0,   r: 0,  s: 1.00, warm: 0.00, top: false },
-    { label: 'Act I',  dog: 'corgi',  cx: 26,  cy: 34,  r: -2, s: 0.48, warm: 0.15, top: true  },
+    { label: 'Act I',  dog: 'corgi',  cx: 0,   cy: 150, r: -2, s: 0.44, warm: 0.15, top: true  },
     { label: 'Act II', dog: 'fluff',  cx: 0,   cy: 118, r: 3,  s: 0.52, warm: 0.45, top: true  },
-    { label: 'Act III',dog: 'wink',   cx: 0,   cy: 112, r: -3, s: 0.52, warm: 0.70, top: true  },
-    { label: '尾声',    dog: 'puppy',  cx: 10,  cy: 56,  r: 1,  s: 0.66, warm: 1.00, top: false }
+    { label: 'Act III',dog: 'wink',   cx: 0,   cy: 58,  r: -3, s: 0.56, warm: 0.70, top: true  },
+    { label: '尾声',    dog: 'cloud',  cx: 10,  cy: 56,  r: 1,  s: 0.66, warm: 1.00, top: false }
   ];
 
   const FALLBACK_DIALOG = [
@@ -40,6 +40,7 @@
   const castMain = $('#castMain');
   const castImg = $('#castImg');
   const castSide = $('#castSide');
+  const phoness = $('#castPhones');
   const bubbleEl = $('#bubble');
   const bMain = $('#bubbleMain');
   const bSide = $('#bubbleSide');
@@ -118,7 +119,9 @@
       castMain.classList.toggle('is-live', target === 0 || target === 4);
       const cloudEl = document.getElementById('castCloud');
       if (cloudEl) cloudEl.classList.toggle('is-in', target === 0 || target === 4);
-      if (target === 1) setTimeout(unfoldCards, 140);
+      phoness.classList.toggle('is-in', target === 3);
+      castMain.classList.toggle('is-listening', target === 3);
+      if (target === 1) setTimeout(bornScraps, 240);
 
       // 换一只狗当"换姿态"
       const src = `assets/dogs/${ACTS[target].dog}.png`;
@@ -301,34 +304,88 @@
   /* ───────── 启动 ───────── */
   acts.forEach((el) => el.classList.add('is-after'));
 
-  /* ───────── 纸团展开 ───────── */
+  /* ───────── 碎片带：纸团展开 + 横向滑动 ───────── */
   const DMS = [0, 1, 2].map((i) => {
     const f = document.getElementById('crumple' + i);
     return f ? f.querySelector('.dm') : null;
   });
 
-  function unfoldCards() {
-    const cards = $$('.scrap');
+  // 带子上的纸从「纸团」展开：border-radius 从 50% 收到 0，同时转正、放大
+  function bornScraps() {
+    const cards = $$('.scrap--lane');
     if (!cards.length) return;
+    // 减少动态效果时不做展开动画，直接显示（否则会卡在第 0 帧变成隐形）
+    if (reduce) {
+      cards.forEach((el) => el.classList.remove('is-born'));
+      return;
+    }
     cards.forEach((el, i) => {
-      if (el.dataset.unfolded) return;
-      el.dataset.unfolded = '1';
-      el.classList.add('is-crumpled');
-      const dm = DMS[i % DMS.length];
-      setTimeout(() => {
-        el.classList.remove('is-crumpled');
+      if (i > 7) return;
+      el.classList.remove('is-born');
+      if (el._t) clearTimeout(el._t);
+      el._t = setTimeout(() => {
+        el.classList.add('is-born');
+        const dm = DMS[i % 3];
+        if (!dm) return;
         el.style.filter = `url(#crumple${i % 3})`;
         const t0 = performance.now();
-        const dur = 1050;
         (function step() {
-          const p = Math.min(1, (performance.now() - t0) / dur);
+          const p = Math.min(1, (performance.now() - t0) / 900);
           const e = 1 - Math.pow(1 - p, 3);
-          if (dm) dm.setAttribute('scale', (30 * (1 - e)).toFixed(2));
+          dm.setAttribute('scale', (16 * (1 - e)).toFixed(2));
           if (p < 1) requestAnimationFrame(step);
-          else el.style.filter = '';
+          else { el.style.filter = ''; dm.setAttribute('scale', '0'); }
         })();
-      }, 110 + i * 190);
+      }, i * 130);
     });
+  }
+
+  // 自动漂 + 拖拽 + 滚轮
+  const driftEl = $('#drift');
+  const trackEl = $('#driftTrack');
+  let driftX = 60;
+  let driftDragging = false;
+  let driftStartX = 0;
+  let driftStartPos = 0;
+  let driftHover = false;
+
+  function driftLoop() {
+    if (trackEl && driftEl) {
+      const vw = driftEl.clientWidth;
+      const total = trackEl.scrollWidth;
+      const min = Math.min(0, vw - total - 60);
+      if (!driftDragging && !driftHover && cur === 1) driftX -= 0.45;
+      if (driftX < min) driftX = 60;
+      if (driftX > 60) driftX = min;
+      trackEl.style.transform = `translate3d(${driftX.toFixed(1)}px,0,0)`;
+    }
+    requestAnimationFrame(driftLoop);
+  }
+  driftLoop();
+
+  if (driftEl) {
+    driftEl.addEventListener('pointerenter', () => { driftHover = true; });
+    driftEl.addEventListener('pointerleave', () => { driftHover = false; driftDragging = false; });
+    driftEl.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('[data-play]')) return;
+      driftDragging = true;
+      driftStartX = e.clientX;
+      driftStartPos = driftX;
+      driftEl.setPointerCapture(e.pointerId);
+    });
+    driftEl.addEventListener('pointermove', (e) => {
+      if (!driftDragging) return;
+      driftX = driftStartPos + (e.clientX - driftStartX);
+    });
+    driftEl.addEventListener('pointerup', (e) => {
+      driftDragging = false;
+      try { driftEl.releasePointerCapture(e.pointerId); } catch (_) {}
+    });
+    driftEl.addEventListener('wheel', (e) => {
+      if (cur !== 1) return;
+      e.preventDefault();
+      driftX -= e.deltaY * 0.9;
+    }, { passive: false });
   }
 
   const paperball = $('#paperball');
@@ -337,7 +394,6 @@
       e.stopPropagation();
       bark(0.8);
       go(1);
-      setTimeout(unfoldCards, 700);
     });
   }
 

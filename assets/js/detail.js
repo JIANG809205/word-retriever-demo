@@ -96,6 +96,8 @@
   /* ───────── 打开 ───────── */
   function show() {
     sheet.classList.add('is-open');
+    const inner = sheet.querySelector('.sheet__inner');
+    if (inner) inner.style.transform = 'translateX(0)';
     document.body.classList.add('sheet-open');
   }
 
@@ -144,6 +146,8 @@
 
   function close() {
     sheet.classList.remove('is-open');
+    const inner = sheet.querySelector('.sheet__inner');
+    if (inner) inner.style.transform = '';
     document.body.classList.remove('sheet-open');
     if (location.hash.match(/^#(card|trace)=/)) history.replaceState(null, '', location.pathname);
   }

@@ -37,7 +37,7 @@
 <div class="paper-tile" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"><span class="cursor__dot"></span></div>
-<div class="curtain" aria-hidden="true"></div>
+<div class="fx" id="fx" aria-hidden="true"><div class="fx__layer"></div></div>
 <div class="progress" aria-hidden="true"></div>
 
 <!-- ───────── 常驻角色 ───────── -->
@@ -78,8 +78,8 @@
 <!-- ───────── 舞台 ───────── -->
 <main class="stage" id="stage">
 
-  <!-- 序幕 -->
-  <section class="act" data-act="0" data-pose="prologue">
+  <!-- 序幕：桌面（所有功能摆在这儿） -->
+  <section class="act act--desk" data-act="0" data-pose="prologue">
     <div class="act__inner act__inner--center">
       <p class="kicker">序幕 · 灯暗下来</p>
       <h1 class="hero__title">
@@ -87,19 +87,53 @@
         <span>叼回了 <em>3</em> 个球</span>
       </h1>
       <p class="lede">
-        从你划过的书、看过的电影里。<br>
-        每一片都能点回原处——原句、原页码、原时间码。
+        桌上这四样东西，就是全部功能。<br>
+        点哪样，狗就带你去哪。
       </p>
+
+      <div class="desk">
+        <button class="thing thing--paper" data-go="1" aria-label="碎片带">
+          <span class="thing__art">
+            <i class="pile p1"></i><i class="pile p2"></i><i class="pile p3"></i>
+          </span>
+          <b>碎片带</b>
+          <em>26 片 · 横向滑动</em>
+        </button>
+
+        <button class="thing thing--map" data-go="2" aria-label="星图">
+          <span class="thing__art">
+            <svg viewBox="0 0 80 80" aria-hidden="true">
+              <g stroke="#D3C3A9" stroke-width="1" stroke-dasharray="2 3">
+                <path d="M14 56 L30 28 L50 34 L64 18"/><path d="M30 28 L38 58"/>
+                <path d="M50 34 L38 58"/><path d="M64 18 L50 34"/>
+              </g>
+              <g fill="#DFA23F">
+                <circle cx="14" cy="56" r="4"/><circle cx="30" cy="28" r="5"/>
+                <circle cx="50" cy="34" r="4"/><circle cx="64" cy="18" r="4.5"/>
+              </g>
+              <circle cx="38" cy="58" r="3.5" fill="#C2523A"/>
+            </svg>
+          </span>
+          <b>星图</b>
+          <em>90 个点 · 可筛选</em>
+        </button>
+
+        <button class="thing thing--radio" data-go="3" aria-label="电台">
+          <span class="thing__art"><img src="assets/props/turntable.png" alt="" draggable="false"></span>
+          <b>电台</b>
+          <em>3 期 · 有声音</em>
+        </button>
+
+        <button class="thing thing--dog" id="dogThing" aria-label="摸摸狗">
+          <span class="thing__art"><img src="assets/dogs/smug.png" alt="" draggable="false"></span>
+          <b>摸摸狗</b>
+          <em>它会叫</em>
+        </button>
+      </div>
+
       <p class="hero__meta">
         <span>0 条痕迹</span><span>0 个主题</span><span>跨 2 种媒介</span>
       </p>
-      <button class="next-btn" data-go="1">
-        <span>第一幕 · 碎片</span>
-        <em>↓</em>
-      </button>
-      <button class="paperball" id="paperball" aria-label="展开纸团">
-        <span class="paperball__ball"></span>
-      </button>
     </div>
   </section>
 

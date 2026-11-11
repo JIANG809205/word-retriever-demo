@@ -13,11 +13,11 @@
 
   /* ───────── 每一幕的配置 ───────── */
   const ACTS = [
-    { label: '序幕',    dog: 'beagle', cx: 0,    cy: 0,   r: 0,  s: 1.00, warm: 0.00, top: false },
-    { label: 'Act I',  dog: 'corgi',  cx: 0,   cy: 150, r: -2, s: 0.44, warm: 0.15, top: true  },
-    { label: 'Act II', dog: 'fluff',  cx: 0,   cy: 118, r: 3,  s: 0.52, warm: 0.45, top: true  },
-    { label: 'Act III',dog: 'wink',   cx: 0,   cy: 58,  r: -3, s: 0.56, warm: 0.70, top: true  },
-    { label: '尾声',    dog: 'cloud',  cx: 10,  cy: 56,  r: 1,  s: 0.66, warm: 1.00, top: false }
+    { label: '序幕',    dog: 'beagle', cx: 0,   cy: 0,   r: 0,  s: 1.00, warm: 0.00, top: false, fx: 'paper' },
+    { label: '碎纸片',  dog: 'corgi',  cx: 0,   cy: 150, r: -2, s: 0.44, warm: 0.15, top: true,  fx: 'paper' },
+    { label: '星图',    dog: 'fluff',  cx: 0,   cy: 118, r: 3,  s: 0.52, warm: 0.45, top: true,  fx: 'map'   },
+    { label: '电台',    dog: 'wink',   cx: 0,   cy: 58,  r: -3, s: 0.56, warm: 0.70, top: true,  fx: 'disc'  },
+    { label: '尾声',    dog: 'cloud',  cx: 10,  cy: 56,  r: 1,  s: 0.66, warm: 1.00, top: false, fx: 'paper' }
   ];
 
   const FALLBACK_DIALOG = [
@@ -32,7 +32,7 @@
   /* ───────── DOM ───────── */
   const acts = $$('.act');
   const body = document.body;
-  const curtain = $('.curtain');
+  const fx = $('#fx');
   const prog = $('.progress');
   const actLabel = $('#actLabel');
   const programme = $('#programme');
@@ -141,15 +141,25 @@
       return;
     }
 
-    // 幕布落下 → 换幕 → 升起
-    curtain.classList.remove('is-up');
-    curtain.classList.add('is-down');
+    // 按去向做不同的转场：从被点的那件东西长出来
+    const from = opts.from && opts.from.getBoundingClientRect
+      ? opts.from.getBoundingClientRect()
+      : null;
+    const ox = from ? from.left + from.width / 2 : innerWidth / 2;
+    const oy = from ? from.top + from.height / 2 : innerHeight / 2;
+    fx.className = 'fx fx--' + (ACTS[target].fx || 'paper');
+    fx.style.setProperty('--ox', ox + 'px');
+    fx.style.setProperty('--oy', oy + 'px');
+    void fx.offsetWidth;
+    fx.classList.add('run');
+
     setTimeout(() => {
       swap();
-      curtain.classList.remove('is-down');
-      curtain.classList.add('is-up');
-      setTimeout(() => { busy = false; }, 560);
-    }, 480);
+      setTimeout(() => {
+        fx.classList.remove('run');
+        busy = false;
+      }, 380);
+    }, 430);
   }
 
   function positionDummy() {}
@@ -161,7 +171,7 @@
       e.preventDefault();
       closeProgramme();
       const v = nav.dataset.go;
-      go(v === '-1' ? cur - 1 : v === '1' ? cur + 1 : Number(v));
+      go(v === '-1' ? cur - 1 : v === '1' ? cur + 1 : Number(v), { from: nav });
       return;
     }
   });
@@ -386,6 +396,24 @@
       e.preventDefault();
       driftX -= e.deltaY * 0.9;
     }, { passive: false });
+  }
+
+  const dogThing = $('#dogThing');
+  if (dogThing) {
+    dogThing.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bark(1);
+      castMain.classList.remove('is-hop');
+      void castMain.offsetWidth;
+      castMain.classList.add('is-hop');
+      dogline.textContent = DOGLINES[dogSay++ % DOGLINES.length];
+      const r = dogThing.getBoundingClientRect();
+      dogline.style.left = Math.max(12, r.left - 30) + 'px';
+      dogline.style.top = (r.top - 40) + 'px';
+      dogline.classList.add('is-in');
+      clearTimeout(dogline._t);
+      dogline._t = setTimeout(() => dogline.classList.remove('is-in'), 2400);
+    });
   }
 
   const paperball = $('#paperball');

@@ -22,6 +22,7 @@
         <div class="turntable__ring"></div>
         <div class="turntable__plinth"></div>
         <div class="vinyl">
+          <img class="vinyl__img" src="assets/props/disc.png" alt="" draggable="false">
           <div class="vinyl__label"><span></span></div>
         </div>
         <div class="tonearm"><i></i></div>
@@ -208,6 +209,7 @@
     btnPlay.textContent = '▶ 播放';
     useAudio();
     panel.classList.add('is-open');
+    panel.style.transform = 'translateY(0)';
     document.body.classList.add('radio-open');
     play();
   }
@@ -216,6 +218,7 @@
     playing = false;
     stopVoice();
     panel.classList.remove('is-open');
+    panel.style.transform = '';
     document.body.classList.remove('radio-open');
   }
 

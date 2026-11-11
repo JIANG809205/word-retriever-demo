@@ -1337,3 +1337,69 @@ body[data-act="4"] .back{ display:inline-flex; }.back:hover{
 }.foot p{
   max-width:100%;
 }
+/* ===========================================================
+   完善批次（2026-11-11）
+   =========================================================== */
+
+/* 1. 第 2 幕：左栏顶部对齐，不再上方空一大块 */
+.act__inner--split{ align-items:start; padding-top:clamp(96px,12vh,140px); }
+.map__text{ padding-top:6px; }
+
+/* 2. 气泡离狗再近一点 */
+.bubble{ max-width:min(240px,22vw); }
+
+/* 3. 第 3 幕（电台）不显示对白气泡，避免压住期数卡 */
+body[data-act="3"] .bubble{ opacity:0 !important; pointer-events:none !important; }
+
+/* 4. 四格说明文字放大 */
+.thing em{ font-size:10.5px; letter-spacing:.08em; color:var(--ink-soft); }
+
+/* 5. 星图：悬停的点放大，连线实心 */
+.map__canvas .nodes circle{
+  transform-box:fill-box; transform-origin:center;
+  transition:transform .18s ease, opacity .18s, stroke-width .18s;
+}
+.map__canvas .nodes circle.is-hot{ transform:scale(1.7); }
+.map__canvas .links path.is-hot{ stroke-dasharray:none; }
+
+/* 6. 转场粒子用纸纹 */
+.bit--paper{
+  background-color:var(--card);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(43,38,32,.07) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(0deg, rgba(43,38,32,.05) 0 1px, transparent 1px 7px);
+}
+
+/* 7. 尾声页脚：右侧给狗留安全区 */
+.foot{ padding-right:clamp(0px,14vw,240px); }
+
+/* 8. 1280 宽（投影 / 笔记本）收一档 */
+@media (max-width:1280px){
+  .hero__title{ font-size:clamp(40px,6.2vw,78px); }
+  .desk{ max-width:740px; gap:14px; }
+  .thing b{ font-size:14px; }
+  .act__head h2{ font-size:clamp(26px,3.2vw,40px); }
+  .cast__main{ width:clamp(150px,18vw,260px); }
+  .studio{ grid-template-columns:minmax(0,1.3fr) minmax(210px,.7fr); }
+}
+
+/* 9. 播放器：下载 / 导出 两个小按钮 */
+.radio__tools{ display:flex; gap:6px; margin-left:8px; }
+.radio__tool{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:3px 9px; color:var(--ink-faint); cursor:pointer;
+  transition:border-color .2s, color .2s;
+}
+.radio__tool:hover{ border-color:var(--rust); color:var(--rust); }
+
+/* 10. 数据来源角标 */
+.srcbadge{
+  position:fixed; left:clamp(16px,3vw,40px); bottom:clamp(16px,3vh,28px);
+  z-index:70; font-family:var(--mono); font-size:9px; letter-spacing:.1em;
+  color:var(--ink-faint); opacity:.75; pointer-events:none;
+}
+body[data-act="1"] .srcbadge,
+body[data-act="2"] .srcbadge,
+body[data-act="3"] .srcbadge,
+body[data-act="4"] .srcbadge{ display:none; }

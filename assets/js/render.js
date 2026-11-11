@@ -4,7 +4,23 @@
    =========================================================== */
 (() => {
   const D = window.WR_DATA;
-  if (!D || !D.cards || !D.cards.length) return;
+  if (!D || !D.cards || !D.cards.length) {
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;inset:0;display:grid;place-items:center;z-index:99;'
+      + 'font-family:var(--mono);font-size:13px;line-height:2;color:#8a7f70;text-align:center';
+    box.innerHTML = '没有数据。<br>先跑一次 <b>python run.py</b>，再刷新。';
+    document.body.appendChild(box);
+    return;
+  }
+
+  // 数据来源角标（演示 / 真实）
+  try {
+    const badge = document.createElement('div');
+    badge.className = 'srcbadge';
+    badge.textContent = (D.meta && D.meta.demo ? '演示语料 · ' : '你的数据 · ')
+      + D.stats.n_traces + ' 条';
+    document.body.appendChild(badge);
+  } catch (_) {}
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];

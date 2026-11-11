@@ -405,15 +405,29 @@
   let driftStartX = 0;
   let driftStartPos = 0;
   let driftHover = false;
+  let driftVel = 0;            // 松手后的惯性
+  let driftLastX = 0;
+  let driftLastT = 0;
 
   function driftLoop() {
     if (trackEl && driftEl) {
       const vw = driftEl.clientWidth;
       const total = trackEl.scrollWidth;
       const min = Math.min(0, vw - total - 60);
-      if (!driftDragging && !driftHover && cur === 1) driftX -= 0.45;
-      if (driftX < min) driftX = 60;
-      if (driftX > 60) driftX = min;
+
+      if (!driftDragging) {
+        // 惯性先走，衰减到很小再交回自动漂移
+        if (Math.abs(driftVel) > 0.08) {
+          driftX += driftVel;
+          driftVel *= 0.93;
+        } else {
+          driftVel = 0;
+          if (!driftHover && cur === 1) driftX -= 0.45;
+        }
+      }
+
+      if (driftX < min) { driftX = 60; driftVel = 0; }
+      if (driftX > 60) { driftX = min; driftVel = 0; }
       trackEl.style.transform = `translate3d(${driftX.toFixed(1)}px,0,0)`;
     }
     requestAnimationFrame(driftLoop);
@@ -446,12 +460,22 @@
         driftDragging = true;
         driftStartX = e.clientX;
         driftStartPos = driftX;
+        driftVel = 0; driftLastX = e.clientX; driftLastT = performance.now();
       }
       driftEl.setPointerCapture(e.pointerId);
     });
     driftEl.addEventListener('pointermove', (e) => {
       if (!dragCard) {
-        if (driftDragging) driftX = driftStartPos + (e.clientX - driftStartX);
+        if (driftDragging) {
+          const now = performance.now();
+          driftX = driftStartPos + (e.clientX - driftStartX);
+          // 采样速度给惯性用
+          if (now - driftLastT > 12) {
+            driftVel = (e.clientX - driftLastX) * 0.55;
+            driftLastX = e.clientX;
+            driftLastT = now;
+          }
+        }
         return;
       }
       const dx = e.clientX - cardStartX;

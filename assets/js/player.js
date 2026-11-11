@@ -181,8 +181,37 @@
     clearInterval(audioTimer);
   }
 
+  /* ───────── 唱针落下的“咔哒” ───────── */
+  let ac = null;
+  function tick(up) {
+    try {
+      if (!ac) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        ac = new AC();
+      }
+      if (ac.state === 'suspended') ac.resume();
+      const t = ac.currentTime;
+      const n = Math.floor(ac.sampleRate * 0.05);
+      const buf = ac.createBuffer(1, n, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 6);
+      const src = ac.createBufferSource();
+      src.buffer = buf;
+      const bp = ac.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = up ? 2200 : 1500;
+      bp.Q.value = 2.2;
+      const g = ac.createGain();
+      g.gain.value = up ? 0.10 : 0.16;
+      src.connect(bp).connect(g).connect(ac.destination);
+      src.start(t);
+    } catch (_) {}
+  }
+
   function play() {
     playing = true;
+    tick(false);
     panel.classList.add('is-playing');
     btnPlay.textContent = '❚❚ 暂停';
     if (audioMode) {
@@ -198,6 +227,7 @@
 
   function pause() {
     playing = false;
+    tick(true);
     panel.classList.remove('is-playing');
     btnPlay.textContent = '▶ 继续';
     stopVoice();

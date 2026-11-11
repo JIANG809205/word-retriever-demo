@@ -412,23 +412,84 @@
   driftLoop();
 
   if (driftEl) {
+    // 「叼走」计数
+    const tossEl = document.createElement('div');
+    tossEl.className = 'drift__meta';
+    tossEl.innerHTML = '<b id="tossNum">0</b> 片被你叼走';
+    driftEl.appendChild(tossEl);
+    let tossed = 0;
+
+    let dragCard = null;
+    let cardMode = false;
+    let cardStartY = 0;
+    let cardStartX = 0;
+
     driftEl.addEventListener('pointerenter', () => { driftHover = true; });
-    driftEl.addEventListener('pointerleave', () => { driftHover = false; driftDragging = false; });
+    driftEl.addEventListener('pointerleave', () => {
+      driftHover = false; driftDragging = false;
+    });
     driftEl.addEventListener('pointerdown', (e) => {
       if (e.target.closest('[data-play]')) return;
-      driftDragging = true;
-      driftStartX = e.clientX;
-      driftStartPos = driftX;
+      cardStartX = e.clientX; cardStartY = e.clientY;
+      dragCard = e.target.closest('.scrap--lane');
+      cardMode = false;
+      if (!dragCard) {
+        driftDragging = true;
+        driftStartX = e.clientX;
+        driftStartPos = driftX;
+      }
       driftEl.setPointerCapture(e.pointerId);
     });
     driftEl.addEventListener('pointermove', (e) => {
-      if (!driftDragging) return;
-      driftX = driftStartPos + (e.clientX - driftStartX);
+      if (!dragCard) {
+        if (driftDragging) driftX = driftStartPos + (e.clientX - driftStartX);
+        return;
+      }
+      const dx = e.clientX - cardStartX;
+      const dy = e.clientY - cardStartY;
+      if (!cardMode && Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+        cardMode = true;
+        dragCard.style.transition = 'none';
+        dragCard.style.zIndex = '9';
+        driftHover = true;
+      }
+      if (cardMode) {
+        dragCard.style.transform =
+          `translate(${dx}px, ${dy}px) rotate(${(dx / 22).toFixed(1)}deg)`;
+        dragCard.style.opacity = String(Math.max(0.35, 1 - Math.abs(dy) / 320));
+      }
     });
-    driftEl.addEventListener('pointerup', (e) => {
+    const finishDrag = (e) => {
+      if (dragCard && cardMode) {
+        const dy = e.clientY - cardStartY;
+        const el = dragCard;
+        if (Math.abs(dy) > 110) {
+          // 叼走
+          el.style.transition = 'transform .45s cubic-bezier(.4,0,.8,.3), opacity .45s';
+          el.style.transform = `translate(${(e.clientX - cardStartX) * 1.4}px, ${dy > 0 ? 520 : -520}px) rotate(${dy > 0 ? 28 : -28}deg) scale(.7)`;
+          el.style.opacity = '0';
+          if (window.__bark) window.__bark(0.5);
+          setTimeout(() => el.remove(), 460);
+          tossed++;
+          tossEl.classList.add('is-on');
+          const num = document.getElementById('tossNum');
+          if (num) num.textContent = String(tossed);
+        } else {
+          el.style.transition = 'transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s';
+          el.style.transform = '';
+          el.style.opacity = '';
+          el.style.zIndex = '';
+        }
+      }
+      dragCard = null;
+      cardMode = false;
       driftDragging = false;
+      driftHover = false;
       try { driftEl.releasePointerCapture(e.pointerId); } catch (_) {}
-    });
+    };
+    driftEl.addEventListener('pointerup', finishDrag);
+    driftEl.addEventListener('pointercancel', finishDrag);
+
     driftEl.addEventListener('wheel', (e) => {
       if (cur !== 1) return;
       e.preventDefault();

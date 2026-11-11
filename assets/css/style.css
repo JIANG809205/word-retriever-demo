@@ -1203,3 +1203,14 @@ body.sheet-open{ overflow:hidden; }
 .studio__list .episode__meta{ font-size:9.5px; }
 .studio__list .episode__play{ margin-top:10px; font-size:10.5px; }
 .studio__list .episode__badge{ display:none; }
+/* 叼走计数 */
+.drift__meta{
+  position:absolute; right:6%; bottom:1.5%;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.1em;
+  color:var(--ink-faint);
+  opacity:0; transform:translateY(4px);
+  transition:opacity .3s, transform .3s;
+}
+.drift__meta b{ color:var(--rust); font-weight:400; }
+.drift__meta.is-on{ opacity:1; transform:none; }
+.scrap--lane{ will-change:transform; }

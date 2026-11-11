@@ -461,8 +461,10 @@
         driftStartX = e.clientX;
         driftStartPos = driftX;
         driftVel = 0; driftLastX = e.clientX; driftLastT = performance.now();
+        // 只有“拖整条带子”才捕获指针；在纸片上按下时不捕获，
+        // 否则 click 会被重定向到 driftEl，点纸片就再也打不开详情层
+        try { driftEl.setPointerCapture(e.pointerId); } catch (_) {}
       }
-      driftEl.setPointerCapture(e.pointerId);
     });
     driftEl.addEventListener('pointermove', (e) => {
       if (!dragCard) {

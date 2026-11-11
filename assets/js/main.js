@@ -159,20 +159,13 @@
     fx.style.setProperty('--oy', oy + 'px');
     void fx.offsetWidth;
     fx.classList.add('run');
-    burst(kind, ox, oy);
+    try { burst(kind, ox, oy); } catch (e) { console.warn('[burst]', e); }
+    try { swap(); } catch (e) { console.error('[swap]', e); }   // 立刻切幕，转场只是装饰
 
     setTimeout(() => {
-      try {
-        swap();
-      } catch (err) {
-        console.error('[swap]', err);
-      } finally {
-        setTimeout(() => {
-          fx.classList.remove('run');
-          busy = false;
-        }, 380);
-      }
-    }, 430);
+      fx.classList.remove('run');
+      busy = false;
+    }, 620);
   }
 
   /* 甩出的小物件：纸片 / 星点 / 唱片环 */
@@ -199,7 +192,7 @@
       const rot = (Math.random() * 720 - 360) | 0;
       const dur = 520 + Math.random() * 320;
 
-      b.animate(
+      const anim = b.animate(
         [
           { transform: 'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity: 0 },
           { transform: 'translate(calc(-50% + ' + dx * 0.35 + 'px), calc(-50% + ' + dy * 0.35 + 'px)) scale(1) rotate(' + rot / 3 + 'deg)', opacity: 1, offset: 0.35 },
@@ -207,8 +200,8 @@
         ],
         { duration: dur, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }
       );
-      setTimeout(() => b.remove(), dur + 260);
-      anim.onfinish = () => b.remove();
+      if (anim) anim.onfinish = () => b.remove();
+      setTimeout(() => b.remove(), dur + 300);
     }
   }
 

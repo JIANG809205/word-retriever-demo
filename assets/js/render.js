@@ -28,6 +28,13 @@
   const DOGS = ['corgi', 'puppy', 'wink', 'fluff', 'beagle', 'sleepy'];
   const dogAt = (i) => `assets/dogs/${DOGS[i % DOGS.length]}.png`;
 
+  // 换一批：按 sessionStorage 里的偏移轮换主题
+  const OFF = Number(sessionStorage.getItem('wr-off') || 0) || 0;
+  if (OFF > 0 && D.cards.length > 1) {
+    const k = OFF % D.cards.length;
+    D.cards = D.cards.slice(k).concat(D.cards.slice(0, k));
+  }
+
   // LLM 生成的是「问句」，统一包装成「……？」
   D.cards.forEach((c) => {
     if (!c.question) return;

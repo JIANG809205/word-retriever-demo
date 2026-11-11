@@ -1403,3 +1403,13 @@ body[data-act="1"] .srcbadge,
 body[data-act="2"] .srcbadge,
 body[data-act="3"] .srcbadge,
 body[data-act="4"] .srcbadge{ display:none; }
+/* 换一批 */
+.shuffle{
+  margin-left:6px; align-self:center;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:3px 10px; color:var(--ink-faint); cursor:pointer;
+  transition:border-color .2s, color .2s;
+}
+.shuffle:hover{ border-color:var(--rust); color:var(--rust); }
+.hero__meta span::before{ content:"◦"; color:var(--mustard); margin-right:6px; }

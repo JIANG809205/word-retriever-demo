@@ -33,6 +33,10 @@
         <header class="radio__head">
           <span class="radio__badge">电台</span>
           <h4 class="radio__title"></h4>
+          <span class="radio__tools">
+            <button class="radio__tool" data-act="dl" title="下载这一期的音频">↓ 音频</button>
+            <button class="radio__tool" data-act="md" title="复制这一期的文字稿">⧉ 文字稿</button>
+          </span>
           <button class="radio__fold" title="收起">⌄</button>
           <button class="radio__close" aria-label="关闭">×</button>
         </header>
@@ -241,6 +245,59 @@
   }
 
   /* ───────── 事件 ───────── */
+  // 下载音频 / 复制文字稿
+  const elDl = $('[data-act="dl"]', panel);
+  const elMd = $('[data-act="md"]', panel);
+
+  function episodeMarkdown() {
+    if (!card) return '';
+    const L = ['# ' + card.question.replace(/[「」]/g, ''), ''];
+    (card.episode.lines || []).forEach((ln) => {
+      L.push('**' + (ln.who || '你') + '**：' + ln.text);
+      if (ln.cite) {
+        const t = (card.traces || []).find((x) => x.id === ln.cite);
+        if (t) L.push('> ' + [t.source, t.locator].filter(Boolean).join(' · '));
+      }
+      L.push('');
+    });
+    L.push('---', '拾字狗 WordRetriever · 这一期的三句原材料：');
+    (card.traces || []).forEach((t) => {
+      L.push('- [' + t.medium + '] ' + t.text + ' — ' + [t.source, t.locator].filter(Boolean).join(' · '));
+    });
+    return L.join('\n');
+  }
+
+  if (elDl) {
+    elDl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!card || !card.episode.audio) { elDl.textContent = '没有音频'; return; }
+      const a = document.createElement('a');
+      a.href = card.episode.audio.file;
+      a.download = 'shizigou-' + (card.id || 'episode') + '.wav';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+  }
+
+  if (elMd) {
+    elMd.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const md = episodeMarkdown();
+      try {
+        await navigator.clipboard.writeText(md);
+        elMd.textContent = '✓ 已复制';
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = md; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); elMd.textContent = '✓ 已复制'; }
+        catch (__) { elMd.textContent = '复制失败'; }
+        ta.remove();
+      }
+      setTimeout(() => { elMd.textContent = '⧉ 文字稿'; }, 1800);
+    });
+  }
+
   // 收起 / 展开：收起来时只留一条，滚轮就能翻页了
   if (btnFold) {
     btnFold.addEventListener('click', () => {

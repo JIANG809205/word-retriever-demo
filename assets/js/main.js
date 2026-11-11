@@ -524,6 +524,45 @@
     });
   }
 
+  /* ───────── 碎片带：把纸扔掉 ───────── */
+  let tossEl = null, tossY0 = 0, tossX0 = 0;
+  if (trackEl) {
+    trackEl.addEventListener('pointerdown', (e) => {
+      const card = e.target.closest('.scrap--lane');
+      if (!card || e.target.closest('[data-play]')) return;
+      tossEl = card; tossY0 = e.clientY; tossX0 = e.clientX;
+    });
+    trackEl.addEventListener('pointermove', (e) => {
+      if (!tossEl) return;
+      const dy = e.clientY - tossY0;
+      if (Math.abs(dy) > 50) {
+        tossEl.style.transition = 'none';
+        tossEl.style.transform =
+          `translate(${(e.clientX - tossX0) * 0.25}px, ${dy}px) rotate(${dy * 0.04}deg)`;
+        tossEl.style.opacity = String(Math.max(0.2, 1 - Math.abs(dy) / 300));
+      }
+    });
+    trackEl.addEventListener('pointerup', (e) => {
+      if (!tossEl) return;
+      const el = tossEl;
+      const dy = e.clientY - tossY0;
+      tossEl = null;
+      if (Math.abs(dy) > 120) {
+        el.style.transition = 'transform .36s cubic-bezier(.4,0,.9,.4), opacity .36s';
+        el.style.transform = `translate(${(e.clientX - tossX0) * 0.4}px, ${dy > 0 ? 640 : -640}px) rotate(${dy > 0 ? 22 : -22}deg)`;
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 380);
+        const n = document.getElementById('scrapsLeft');
+        if (n) n.textContent = String(Math.max(0, Number(n.textContent) - 1));
+        try { bark(0.35); } catch (_) {}
+      } else {
+        el.style.transition = '';
+        el.style.transform = '';
+        el.style.opacity = '';
+      }
+    });
+  }
+
   const paperball = $('#paperball');
   if (paperball) {
     paperball.addEventListener('click', (e) => {
@@ -663,6 +702,17 @@
   /* ───────── 回桌面 ───────── */
   const backBtn = $('#backBtn');
   if (backBtn) backBtn.addEventListener('click', () => go(0));
+
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  if (shuffleBtn) {
+    shuffleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const n = (window.WR_DATA && window.WR_DATA.cards) ? window.WR_DATA.cards.length : 3;
+      const cur = Number(sessionStorage.getItem('wr-off') || 0) || 0;
+      sessionStorage.setItem('wr-off', String((cur + 3) % Math.max(3, n)));
+      location.reload();
+    });
+  }
 
   go(0);
 

@@ -55,15 +55,10 @@
     const st = getComputedStyle(castMain);
     const base = parseFloat(st.bottom) || 90;
     const w = castMain.offsetWidth || 300;
-    if (cfg.top) {
-      bubbleEl.classList.add('top');
-      bubbleEl.style.top = 'clamp(88px,12vh,128px)';
-      bubbleEl.style.bottom = 'auto';
-    } else {
-      bubbleEl.classList.remove('top');
-      bubbleEl.style.top = 'auto';
-      bubbleEl.style.bottom = (base + w * cfg.s + 16) + 'px';
-    }
+    // 气泡永远贴在狗头上方，不再靠顶——之前贴顶会压住各幕的标题
+    bubbleEl.classList.remove('top');
+    bubbleEl.style.top = 'auto';
+    bubbleEl.style.bottom = (base + w * cfg.s + 18) + 'px';
     bubbleEl.style.right = st.right;
   }
 

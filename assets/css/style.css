@@ -1261,3 +1261,58 @@ body.sheet-open{ overflow:hidden; }
 /* 唱机底盘改成圆形，和盘面对齐 */
 .turntable__plinth{ inset:-4%; border-radius:50%; }
 .turntable__ring{ inset:-9%; }
+
+/* ===========================================================
+   修：云朵误飘到上半屏 / 返回按钮没样式 / 四格大小不一
+   =========================================================== */
+.cast__cloud{ display:none !important; }
+
+.back{
+  position:fixed; left:clamp(16px,3vw,40px); bottom:clamp(16px,3vh,28px);
+  z-index:75;
+  display:none; align-items:center; gap:7px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  background:rgba(251,246,232,.86); backdrop-filter:blur(6px);
+  border:1px solid var(--line); border-radius:999px;
+  padding:7px 15px; color:var(--ink-soft); cursor:pointer;
+  transition:border-color .2s, color .2s, background .2s;
+}
+body[data-act="1"] .back,
+body[data-act="2"] .back,
+body[data-act="3"] .back,
+body[data-act="4"] .back{ display:inline-flex; }
+.back:hover{ border-color:var(--rust); color:var(--rust); background:var(--card); }
+
+/* 顶部“换形象”按钮：复用 .sound 的壳，去掉 emoji 上下不对齐 */
+#dogBtn{ position:relative; top:0; }
+#dogBtn b{ font-weight:400; }
+
+/* 四格图标统一大小，唱机图自带白底所以单独收一点 */
+.thing__art img{ width:72%; height:72%; object-fit:contain; }
+.thing--radio .thing__art{ background:#fff; }
+.thing--radio .thing__art img{ width:82%; height:82%; }
+.thing--dog .thing__art{ background:rgba(251,246,232,.5); }
+/* ===========================================================
+   收尾修：气泡回到清晰小卡片 / 尾声不再两套导航 / 页脚不挤
+   =========================================================== */
+.bubble{ filter:none !important; }
+.bubble .puff,
+.bubble .bubble__body::before,
+.bubble .bubble__body::after{ display:none !important; }
+.bubble{
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  border-radius:14px 14px 4px 14px !important;
+  box-shadow:0 14px 24px -16px rgba(60,44,26,.5) !important;
+}
+.bubble.is-in, .bubble.is-in .bubble__body{ animation:none !important; }
+
+/* 尾声已经有“← 桌面”，去掉重复的“回到序幕” */
+.next-btn--bare{ display:none !important; }
+
+/* 页脚竖排，别挤成两行 */
+.foot{
+  flex-direction:column !important; align-items:flex-start !important;
+  gap:6px !important; max-width:min(100%,760px) !important;
+}
+.foot p{ max-width:100% !important; }

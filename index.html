@@ -55,8 +55,11 @@
     <img id="castImg" src="assets/dogs/beagle.png" alt="" draggable="false">
   </figure>
   <div class="bubble" id="bubble">
-    <p class="bubble__main" id="bubbleMain"></p>
-    <p class="bubble__side" id="bubbleSide"></p>
+    <i class="puff puff--a"></i><i class="puff puff--b"></i><i class="puff puff--c"></i>
+    <div class="bubble__body">
+      <p class="bubble__main" id="bubbleMain"></p>
+      <p class="bubble__side" id="bubbleSide"></p>
+    </div>
   </div>
 </div>
 
@@ -69,6 +72,7 @@
   <button class="programme-btn" id="programmeBtn">
     <span class="programme-btn__lines"><i></i><i></i><i></i></span>节目单
   </button>
+  <button class="sound" id="dogBtn" title="换一只狗">🐾 换形象</button>
   <button class="sound" id="sound" aria-pressed="false" title="打开声音">
     <span class="sound__bars"><i></i><i></i><i></i></span>
     <span class="sound__txt">静音</span>
@@ -182,16 +186,19 @@
     </div>
   </section>
 
-  <!-- 第三幕：电台 -->
+  <!-- 第三幕：电台（整页唱机） -->
   <section class="act" data-act="3" data-pose="radio">
     <div class="act__inner">
-      <header class="act__head">
+      <header class="act__head act__head--tight">
         <p class="act__no">Act III</p>
         <h2>电台</h2>
-        <p class="act__sub">三种材料，一期播客。每条观点都能点回原处。</p>
+        <p class="act__sub">一段书摘、一句台词，做成一期只给你一个人听的节目。</p>
       </header>
-      <div class="episodes" id="episodes"></div>
-      <p class="act__hint">脚本由模型写，声音由系统合成——离线、免费。</p>
+      <div class="studio">
+        <div class="radio-dock" id="radioDock"></div>
+        <aside class="studio__list" id="episodes" aria-label="期数列表"></aside>
+      </div>
+      <p class="act__hint">点左边期数换一期 · 点脚本里任意一句从那儿开始 · ⌄ 收起播放条</p>
     </div>
   </section>
 
@@ -216,11 +223,7 @@
 </main>
 
 <!-- ───────── 幕间导航 ───────── -->
-<nav class="actnav" aria-label="幕间导航">
-  <button data-go="-1" title="上一幕">↑</button>
-  <span class="actnav__label" id="actLabel">序幕</span>
-  <button data-go="1" title="下一幕">↓</button>
-</nav>
+<button class="back" id="backBtn">← 桌面</button>
 
 <!-- ───────── 节目单 ───────── -->
 <div class="programme" id="programme" aria-hidden="true">

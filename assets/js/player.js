@@ -194,9 +194,19 @@
     stopVoice();
   }
 
-  function open(i) {
+  function open(i, opts = {}) {
     card = D.cards[i];
     if (!card) return;
+    // 第三幕整页模式：把面板挂进 #radioDock，不再浮在底部
+    const dock = document.getElementById('radioDock');
+    const docked = !!(opts.docked && dock);
+    if (docked) {
+      dock.appendChild(panel);
+      panel.classList.add('radio--docked');
+    } else {
+      document.body.appendChild(panel);
+      panel.classList.remove('radio--docked');
+    }
     lines = card.episode.lines;
     elTitle.textContent = '「' + card.question.replace(/[「」？?]/g, '') + '」';
     if (elLabel) {
@@ -211,7 +221,7 @@
     btnPlay.textContent = '▶ 播放';
     useAudio();
     panel.classList.add('is-open');
-    panel.style.transform = 'translateY(0)';
+    panel.style.transform = panel.classList.contains('radio--docked') ? 'none' : 'translateY(0)';
     document.body.classList.add('radio-open');
     play();
   }
@@ -221,6 +231,7 @@
     stopVoice();
     panel.classList.remove('is-open');
     panel.style.transform = '';
+    panel.classList.remove('radio--docked');
     document.body.classList.remove('radio-open');
   }
 
@@ -235,9 +246,17 @@
     });
   }
 
-  // 第三幕的电台卡
+  // 第三幕的电台卡：整页模式
   document.querySelectorAll('.episode[data-episode]').forEach((el) => {
-    el.addEventListener('click', () => open(Number(el.dataset.episode)));
+    el.addEventListener('click', () => open(Number(el.dataset.episode), { docked: true }));
+  });
+
+  // 进第三幕时自动装好第一期（不自动播）
+  window.addEventListener('wr:act', (e) => {
+    if (Number(e.detail) !== 3) return;
+    if (panel.classList.contains('radio--docked')) return;
+    const dock = document.getElementById('radioDock');
+    if (dock && D.cards.length) open(0, { docked: true });
   });
 
   // 碎片卡右下角的时长

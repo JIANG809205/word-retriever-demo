@@ -34,7 +34,7 @@
   const body = document.body;
   const fx = $('#fx');
   const prog = $('.progress');
-  const actLabel = $('#actLabel');
+  const actLabel = $('#actLabel');   // 可能已被移除
   const programme = $('#programme');
   const cast = $('.cast');
   const castMain = $('#castMain');
@@ -110,7 +110,7 @@
         if (i === target) el.querySelector('.act__inner').scrollTop = 0;
       });
       cur = target;
-      actLabel.textContent = ACTS[target].label;
+      if (actLabel) actLabel.textContent = ACTS[target].label;
       applyPose(target);
       layoutBubble(target);
       showBubble(target);
@@ -121,16 +121,11 @@
       if (cloudEl) cloudEl.classList.toggle('is-in', target === 0 || target === 4);
       phoness.classList.toggle('is-in', target === 3);
       castMain.classList.toggle('is-listening', target === 3);
+      if (backBtn) backBtn.classList.toggle('is-on', target !== 0);
       if (target === 1) setTimeout(bornScraps, 240);
+      window.dispatchEvent(new CustomEvent('wr:act', { detail: target }));
 
-      // 换一只狗当"换姿态"
-      const src = `assets/dogs/${ACTS[target].dog}.png`;
-      if (castImg.getAttribute('src') !== src) {
-        castImg.setAttribute('src', src);
-        castMain.classList.remove('is-swap');
-        void castMain.offsetWidth;
-        castMain.classList.add('is-swap');
-      }
+            setDog(chosenDog, false);   // 形象固定，不随幕变化
     };
 
     positionDummy();
@@ -195,7 +190,9 @@
           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.7) rotate(' + rot + 'deg)', opacity: 0 }
         ],
         { duration: dur, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }
-      ).onfinish = () => b.remove();
+      );
+      setTimeout(() => b.remove(), dur + 260);
+      anim.onfinish = () => b.remove();
     }
   }
 
@@ -512,6 +509,58 @@
   if (stampLine && window.WR_DATA && window.WR_DATA.stats) {
     stampLine.textContent = window.WR_DATA.stats.n_traces + ' 条';
   }
+
+  /* ───────── 固定形象 + 换一只 ───────── */
+  const DOGS = ['beagle', 'corgi', 'fluff', 'wink', 'puppy', 'cloud', 'smug', 'chef'];
+  let chosenDog = 'beagle';
+  try { chosenDog = localStorage.getItem('wr-dog') || 'beagle'; } catch (_) {}
+  if (!DOGS.includes(chosenDog)) chosenDog = 'beagle';
+
+  function setDog(name, animate = true) {
+    chosenDog = name;
+    try { localStorage.setItem('wr-dog', name); } catch (_) {}
+    castImg.setAttribute('src', 'assets/dogs/' + name + '.png');
+    if (animate) {
+      castMain.classList.remove('is-swap');
+      void castMain.offsetWidth;
+      castMain.classList.add('is-swap');
+    }
+  }
+
+  const picker = document.createElement('div');
+  picker.className = 'picker';
+  picker.innerHTML = DOGS.map((d) =>
+    `<button data-dog="${d}" title="${d}"><img src="assets/dogs/${d}.png" alt=""></button>`
+  ).join('');
+  document.body.appendChild(picker);
+
+  picker.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-dog]');
+    if (!b) return;
+    setDog(b.dataset.dog);
+    picker.classList.remove('is-open');
+    bark(0.6);
+  });
+
+  const dogBtn = $('#dogBtn');
+  if (dogBtn) {
+    dogBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const r = dogBtn.getBoundingClientRect();
+      picker.style.top = (r.bottom + 10) + 'px';
+      picker.style.right = Math.max(12, innerWidth - r.right) + 'px';
+      picker.classList.toggle('is-open');
+    });
+  }
+  document.addEventListener('click', (e) => {
+    if (picker.classList.contains('is-open')
+        && !e.target.closest('.picker')
+        && !e.target.closest('#dogBtn')) picker.classList.remove('is-open');
+  });
+
+  /* ───────── 回桌面 ───────── */
+  const backBtn = $('#backBtn');
+  if (backBtn) backBtn.addEventListener('click', () => go(0));
 
   go(0);
 

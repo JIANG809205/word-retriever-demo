@@ -114,7 +114,6 @@
       el.className = 'episode';
       el.setAttribute('data-episode', String(i));
       el.innerHTML = `
-        ${c.episode.audio ? '<span class="episode__badge">有音频</span>' : ''}
         <p class="episode__no">第 ${i + 1} 期</p>
         <h3 class="episode__q">${c.question}</h3>
         <p class="episode__meta">${c.size} 条痕迹 · ${c.media.join(' / ')} · ${c.episode.duration}</p>

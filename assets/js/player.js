@@ -33,6 +33,7 @@
         <header class="radio__head">
           <span class="radio__badge">电台</span>
           <h4 class="radio__title"></h4>
+          <button class="radio__fold" title="收起">⌄</button>
           <button class="radio__close" aria-label="关闭">×</button>
         </header>
         <ol class="radio__lines"></ol>
@@ -50,6 +51,7 @@
   const elLines = $('.radio__lines', panel);
   const elMeta = $('.radio__meta', panel);
   const btnPlay = $('[data-act="play"]', panel);
+  const btnFold = $('.radio__fold', panel);
   const elLabel = $('.vinyl__label span', panel);
 
   /* ───────── 状态 ───────── */
@@ -223,6 +225,16 @@
   }
 
   /* ───────── 事件 ───────── */
+  // 收起 / 展开：收起来时只留一条，滚轮就能翻页了
+  if (btnFold) {
+    btnFold.addEventListener('click', () => {
+      const folded = panel.classList.toggle('is-folded');
+      btnFold.title = folded ? '展开' : '收起';
+      document.body.classList.toggle('radio-folded', folded);
+      if (folded) pause();
+    });
+  }
+
   // 第三幕的电台卡
   document.querySelectorAll('.episode[data-episode]').forEach((el) => {
     el.addEventListener('click', () => open(Number(el.dataset.episode)));

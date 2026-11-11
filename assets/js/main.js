@@ -141,17 +141,19 @@
       return;
     }
 
-    // 按去向做不同的转场：从被点的那件东西长出来
+    // 按去向做不同的转场：从被点的那件东西长出来，并甩出对应的碎片
     const from = opts.from && opts.from.getBoundingClientRect
       ? opts.from.getBoundingClientRect()
       : null;
     const ox = from ? from.left + from.width / 2 : innerWidth / 2;
     const oy = from ? from.top + from.height / 2 : innerHeight / 2;
-    fx.className = 'fx fx--' + (ACTS[target].fx || 'paper');
+    const kind = ACTS[target].fx || 'paper';
+    fx.className = 'fx fx--' + kind;
     fx.style.setProperty('--ox', ox + 'px');
     fx.style.setProperty('--oy', oy + 'px');
     void fx.offsetWidth;
     fx.classList.add('run');
+    burst(kind, ox, oy);
 
     setTimeout(() => {
       swap();
@@ -160,6 +162,41 @@
         busy = false;
       }, 380);
     }, 430);
+  }
+
+  /* 甩出的小物件：纸片 / 星点 / 唱片环 */
+  function burst(kind, ox, oy) {
+    if (reduce) return;
+    const N = kind === 'paper' ? 12 : kind === 'map' ? 16 : 10;
+    for (let i = 0; i < N; i++) {
+      const b = document.createElement('i');
+      b.className = 'bit ' + (
+        kind === 'paper' ? 'bit--paper' : kind === 'map' ? 'bit--dot' : 'bit--ring'
+      );
+      if (kind === 'map') {
+        b.style.background = ['#DFA23F', '#C2523A', '#7E9070'][i % 3];
+      }
+      b.style.left = ox + 'px';
+      b.style.top = oy + 'px';
+      b.style.opacity = '0';
+      document.body.appendChild(b);
+
+      const ang = (i / N) * Math.PI * 2 + Math.random() * 0.5;
+      const dist = 120 + Math.random() * 320;
+      const dx = Math.cos(ang) * dist;
+      const dy = Math.sin(ang) * dist;
+      const rot = (Math.random() * 720 - 360) | 0;
+      const dur = 520 + Math.random() * 320;
+
+      b.animate(
+        [
+          { transform: 'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity: 0 },
+          { transform: 'translate(calc(-50% + ' + dx * 0.35 + 'px), calc(-50% + ' + dy * 0.35 + 'px)) scale(1) rotate(' + rot / 3 + 'deg)', opacity: 1, offset: 0.35 },
+          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.7) rotate(' + rot + 'deg)', opacity: 0 }
+        ],
+        { duration: dur, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }
+      ).onfinish = () => b.remove();
+    }
   }
 
   function positionDummy() {}
@@ -204,6 +241,10 @@
 
   // 滚轮：只在当前幕滚到底/顶时翻幕
   window.addEventListener('wheel', (e) => {
+    // 播放条/详情层开着时，滚轮是给它们滚内容的，不要切幕（收起后放行）
+    if (document.body.classList.contains('sheet-open')) return;
+    if (document.body.classList.contains('radio-open')
+        && !document.body.classList.contains('radio-folded')) return;
     const now = Date.now();
     if (now < wheelLock || busy) return;
     const inner = $('.act.is-active .act__inner');
@@ -465,6 +506,11 @@
       castImg.style.transform =
         `translate(${(dx * 16).toFixed(1)}px, ${(dy * 8).toFixed(1)}px) rotate(${(dx * 5).toFixed(1)}deg)`;
     });
+  }
+
+  const stampLine = document.getElementById('stampLine');
+  if (stampLine && window.WR_DATA && window.WR_DATA.stats) {
+    stampLine.textContent = window.WR_DATA.stats.n_traces + ' 条';
   }
 
   go(0);

@@ -1005,3 +1005,78 @@ body.sheet-open{ overflow:hidden; }
 .vinyl::after{ z-index:2; }
 .vinyl__label{ z-index:3; inset:34%; }
 .vinyl__label::after{ z-index:4; }
+/* ===========================================================
+   首页：印章
+   =========================================================== */
+.stamp{
+  position:absolute; right:clamp(8px,3vw,60px); top:clamp(80px,14vh,150px);
+  width:clamp(88px,9vw,132px); aspect-ratio:1;
+  display:grid; place-content:center; gap:2px; text-align:center;
+  transform:rotate(-9deg);
+  border:2px solid var(--rust); border-radius:10%;
+  color:var(--rust);
+  box-shadow:inset 0 0 0 3px rgba(194,82,58,0), inset 0 0 0 4px var(--rust);
+  opacity:.9;
+  animation:stampIn .7s cubic-bezier(.2,1.4,.4,1) both;
+}
+@keyframes stampIn{
+  0%{ opacity:0; transform:rotate(-9deg) scale(1.6) }
+  60%{ opacity:1; transform:rotate(-11deg) scale(.94) }
+  100%{ opacity:.9; transform:rotate(-9deg) scale(1) }
+}
+.stamp__cn{
+  font-family:var(--serif); font-size:clamp(17px,1.9vw,26px); font-weight:900;
+  letter-spacing:.08em; line-height:1.1;
+}
+.stamp__no{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.06em;
+  border-top:1px solid currentColor; padding-top:3px;
+}
+
+/* ===========================================================
+   入口转场：物件散开
+   =========================================================== */
+.fx{ position:fixed; inset:0; z-index:150; pointer-events:none; }
+.fx__layer{ position:absolute; inset:0; opacity:0; }
+.fx.run .fx__layer{ opacity:1; animation:fxSpread .78s cubic-bezier(.6,0,.3,1) forwards; }
+@keyframes fxSpread{
+  0%  { clip-path:circle(0% at var(--ox,50%) var(--oy,50%)) }
+  100%{ clip-path:circle(148% at var(--ox,50%) var(--oy,50%)) }
+}
+
+/* 飞出来的小东西 */
+.bit{
+  position:fixed; z-index:151; pointer-events:none;
+  left:0; top:0; will-change:transform, opacity;
+}
+.bit--paper{
+  width:16px; height:20px; background:var(--card);
+  border:1px solid var(--line);
+  box-shadow:0 3px 6px -4px rgba(60,44,26,.6);
+}
+.bit--dot{ width:8px; height:8px; border-radius:50%; }
+.bit--note{
+  width:10px; height:10px; border-radius:50%;
+  background:var(--rust);
+}
+.bit--ring{
+  width:40px; height:40px; border-radius:50%;
+  border:1.5px solid rgba(43,38,32,.35);
+}
+
+/* ===========================================================
+   播放条收起
+   =========================================================== */
+.radio{ transition:transform .55s cubic-bezier(.2,.8,.2,1), max-height .45s ease; }
+.radio__fold{
+  margin-left:auto; background:none; border:1px solid var(--line);
+  border-radius:50%; width:26px; height:26px; line-height:1;
+  color:var(--ink-soft); cursor:pointer; font-size:13px;
+  transition:border-color .2s, color .2s, transform .3s;
+}
+.radio__fold:hover{ border-color:var(--rust); color:var(--rust); }
+.radio__close{ margin-left:8px; }
+.radio.is-folded{ max-height:66px; overflow:hidden; }
+.radio.is-folded .radio__fold{ transform:rotate(180deg); }
+.radio.is-folded .radio__stage{ opacity:.35; pointer-events:none; }
+.radio.is-folded .radio__stage{ transition:opacity .3s; }

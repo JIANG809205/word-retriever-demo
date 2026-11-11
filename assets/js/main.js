@@ -87,6 +87,9 @@
     const target = clamp(Number(n) || 0, 0, acts.length - 1);
     if (busy || target === cur) return;
     busy = true;
+    // 看门狗：任何异常都不能把页面锁死
+    clearTimeout(go._wd);
+    go._wd = setTimeout(() => { busy = false; }, 2600);
 
     const first = cur < 0;
     const prev = cur;
@@ -102,8 +105,21 @@
         el.classList.toggle('is-active', i === target);
         el.classList.toggle('is-before', i < target);
         el.classList.toggle('is-after', i > target);
+        el.style.opacity = i === target ? '1' : '0';
+        el.style.pointerEvents = i === target ? 'auto' : 'none';
         if (i === target) el.querySelector('.act__inner').scrollTop = 0;
       });
+      // 兜底：万一过渡动画卡住（后台标签页 / 掉帧），1 秒后硬落位
+      clearTimeout(go._settle);
+      go._settle = setTimeout(() => {
+        acts.forEach((el, i) => {
+          el.style.transition = 'none';
+          el.style.opacity = i === target ? '1' : '0';
+          el.style.transform = 'none';
+        });
+        acts[target].classList.add('is-active');
+        setTimeout(() => { acts.forEach((el) => { el.style.transition = ''; }); }, 60);
+      }, 900);
       cur = target;
       if (actLabel) actLabel.textContent = ACTS[target].label;
       applyPose(target);
@@ -146,11 +162,16 @@
     burst(kind, ox, oy);
 
     setTimeout(() => {
-      swap();
-      setTimeout(() => {
-        fx.classList.remove('run');
-        busy = false;
-      }, 380);
+      try {
+        swap();
+      } catch (err) {
+        console.error('[swap]', err);
+      } finally {
+        setTimeout(() => {
+          fx.classList.remove('run');
+          busy = false;
+        }, 380);
+      }
     }, 430);
   }
 

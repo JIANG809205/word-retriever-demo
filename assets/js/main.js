@@ -482,7 +482,7 @@
       }
       const dx = e.clientX - cardStartX;
       const dy = e.clientY - cardStartY;
-      if (!cardMode && Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+      if (!cardMode && Math.hypot(dx, dy) > 10) {
         cardMode = true;
         dragCard.style.transition = 'none';
         dragCard.style.zIndex = '9';
@@ -496,12 +496,16 @@
     });
     const finishDrag = (e) => {
       if (dragCard && cardMode) {
+        const dx0 = e.clientX - cardStartX;
         const dy = e.clientY - cardStartY;
         const el = dragCard;
-        if (Math.abs(dy) > 110) {
+        if (Math.hypot(dx0, dy) > 90) {
           // 叼走
+          const dir = Math.abs(dx0) > Math.abs(dy) ? (dx0 > 0 ? 1 : -1) : 0;
           el.style.transition = 'transform .45s cubic-bezier(.4,0,.8,.3), opacity .45s';
-          el.style.transform = `translate(${(e.clientX - cardStartX) * 1.4}px, ${dy > 0 ? 520 : -520}px) rotate(${dy > 0 ? 28 : -28}deg) scale(.7)`;
+          el.style.transform = dir
+            ? `translate(${dir * 620}px, ${dy * 0.6}px) rotate(${dir * 30}deg) scale(.65)`
+            : `translate(${dx0 * 1.2}px, ${dy > 0 ? 560 : -560}px) rotate(${dy > 0 ? 28 : -28}deg) scale(.7)`;
           el.style.opacity = '0';
           if (window.__bark) window.__bark(0.5);
           setTimeout(() => el.remove(), 460);
@@ -509,6 +513,8 @@
           tossEl.classList.add('is-on');
           const num = document.getElementById('tossNum');
           if (num) num.textContent = String(tossed);
+          const left = document.getElementById('scrapsLeft');
+          if (left) left.textContent = String(document.querySelectorAll('.scrap--lane').length);
         } else {
           el.style.transition = 'transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s';
           el.style.transform = '';
@@ -550,44 +556,14 @@
     });
   }
 
-  /* ───────── 碎片带：把纸扔掉 ───────── */
-  let tossEl = null, tossY0 = 0, tossX0 = 0;
-  if (trackEl) {
-    trackEl.addEventListener('pointerdown', (e) => {
-      const card = e.target.closest('.scrap--lane');
-      if (!card || e.target.closest('[data-play]')) return;
-      tossEl = card; tossY0 = e.clientY; tossX0 = e.clientX;
-    });
-    trackEl.addEventListener('pointermove', (e) => {
-      if (!tossEl) return;
-      const dy = e.clientY - tossY0;
-      if (Math.abs(dy) > 50) {
-        tossEl.style.transition = 'none';
-        tossEl.style.transform =
-          `translate(${(e.clientX - tossX0) * 0.25}px, ${dy}px) rotate(${dy * 0.04}deg)`;
-        tossEl.style.opacity = String(Math.max(0.2, 1 - Math.abs(dy) / 300));
-      }
-    });
-    trackEl.addEventListener('pointerup', (e) => {
-      if (!tossEl) return;
-      const el = tossEl;
-      const dy = e.clientY - tossY0;
-      tossEl = null;
-      if (Math.abs(dy) > 120) {
-        el.style.transition = 'transform .36s cubic-bezier(.4,0,.9,.4), opacity .36s';
-        el.style.transform = `translate(${(e.clientX - tossX0) * 0.4}px, ${dy > 0 ? 640 : -640}px) rotate(${dy > 0 ? 22 : -22}deg)`;
-        el.style.opacity = '0';
-        setTimeout(() => el.remove(), 380);
-        const n = document.getElementById('scrapsLeft');
-        if (n) n.textContent = String(Math.max(0, Number(n.textContent) - 1));
-        try { bark(0.35); } catch (_) {}
-      } else {
-        el.style.transition = '';
-        el.style.transform = '';
-        el.style.opacity = '';
-      }
-    });
-  }
+  /* 收集「被叼走」计数（投掷逻辑在 finishDrag 里，别在这里重复实现） */
+  const scrapsLeftEl = document.getElementById('scrapsLeft');
+  const syncLeft = () => {
+    if (!scrapsLeftEl) return;
+    const total = document.querySelectorAll('.scrap--lane').length;
+    scrapsLeftEl.textContent = String(total);
+  };
+  syncLeft();
 
   const paperball = $('#paperball');
   if (paperball) {

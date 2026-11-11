@@ -1,253 +1,1205 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>拾字狗 WordRetriever — 一场五幕的私人播客</title>
-<script>document.documentElement.classList.add('js');</script>
-<meta name="description" content="把散落在书和电影里的想法叼回来，做成一期只给你一个人听的播客。">
-<link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
+/* ===========================================================
+   拾字狗 WordRetriever — 五幕
+   气质：旧纸 / 印章 / 打字机标签 / 剧场节目单
+   =========================================================== */
 
-<svg class="svg-defs" aria-hidden="true">
-  <filter id="torn">
-    <feTurbulence type="fractalNoise" baseFrequency="0.014 0.022" numOctaves="4" seed="9" result="n"/>
-    <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-  <filter id="crumpleBall">
-    <feTurbulence type="fractalNoise" baseFrequency="0.03 0.04" numOctaves="4" seed="5" result="n"/>
-    <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-  <filter id="crumple0">
-    <feTurbulence type="fractalNoise" baseFrequency="0.021 0.028" numOctaves="4" seed="3" result="n"/>
-    <feDisplacementMap class="dm" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-  <filter id="crumple1">
-    <feTurbulence type="fractalNoise" baseFrequency="0.019 0.031" numOctaves="4" seed="11" result="n"/>
-    <feDisplacementMap class="dm" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-  <filter id="crumple2">
-    <feTurbulence type="fractalNoise" baseFrequency="0.024 0.026" numOctaves="4" seed="21" result="n"/>
-    <feDisplacementMap class="dm" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
+:root{
+  --paper:      #EDE3D0;
+  --paper-2:    #F6EFE0;
+  --card:       #FBF6E8;
+  --ink:        #2B2620;
+  --ink-soft:   #6E6355;
+  --ink-faint:  #9C9082;
+  --rust:       #C2523A;
+  --mustard:    #DFA23F;
+  --sage:       #7E9070;
+  --line:       #D3C3A9;
 
-<div class="paper" aria-hidden="true"></div>
-<div class="paper-tile" aria-hidden="true"></div>
-<div class="grain" aria-hidden="true"></div>
-<div class="cursor" aria-hidden="true"><span class="cursor__dot"></span></div>
-<div class="fx" id="fx" aria-hidden="true"><div class="fx__layer"></div></div>
-<div class="progress" aria-hidden="true"></div>
+  --serif: "Songti SC","Noto Serif SC","SimSun",serif;
+  --mono:  "Consolas","SF Mono","Courier New",monospace;
+  --sans:  "PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
 
-<!-- ───────── 常驻角色 ───────── -->
-<div class="cast" aria-hidden="true">
-  <div class="cast__cloud" id="castCloud"><i></i><i></i><i></i><i></i></div>
-  <figure class="cast__side" id="castSide"><img src="assets/dogs/fluff.png" alt="" draggable="false"></figure>
-  <figure class="cast__main" id="castMain">
-    <svg class="cast__phones" id="castPhones" viewBox="0 0 120 130" aria-hidden="true">
-      <path class="ph-band" d="M22 66 C22 26 98 26 98 66"/>
-      <rect class="ph-cup" x="8"  y="58" width="26" height="34" rx="11"/>
-      <rect class="ph-pad" x="12" y="62" width="18" height="26" rx="8"/>
-      <rect class="ph-cup" x="86" y="58" width="26" height="34" rx="11"/>
-      <rect class="ph-pad" x="90" y="62" width="18" height="26" rx="8"/>
-    </svg>
-    <img id="castImg" src="assets/dogs/beagle.png" alt="" draggable="false">
-  </figure>
-  <div class="bubble" id="bubble">
-    <i class="puff puff--a"></i><i class="puff puff--b"></i><i class="puff puff--c"></i>
-    <div class="bubble__body">
-      <p class="bubble__main" id="bubbleMain"></p>
-      <p class="bubble__side" id="bubbleSide"></p>
-    </div>
-  </div>
-</div>
+  --warm: 0;          /* 0=晨 1=夜，按幕推进 */
+  --act: 0;
+}
 
-<!-- ───────── 顶栏 ───────── -->
-<header class="topbar">
-  <a class="brand" href="#" data-go="0">
-    <span class="brand__cn">拾字狗</span>
-    <span class="brand__en">WordRetriever</span>
-  </a>
-  <button class="programme-btn" id="programmeBtn">
-    <span class="programme-btn__lines"><i></i><i></i><i></i></span>节目单
-  </button>
-  <button class="sound" id="dogBtn" title="换一只狗">🐾 换形象</button>
-  <button class="sound" id="sound" aria-pressed="false" title="打开声音">
-    <span class="sound__bars"><i></i><i></i><i></i></span>
-    <span class="sound__txt">静音</span>
-  </button>
-</header>
+*{ box-sizing:border-box; margin:0; padding:0; }
 
-<!-- ───────── 舞台 ───────── -->
-<main class="stage" id="stage">
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.75;
+  height:100vh; overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
 
-  <!-- 序幕：桌面（所有功能摆在这儿） -->
-  <section class="act act--desk" data-act="0" data-pose="prologue">
-    <div class="act__inner act__inner--center">
-      <p class="kicker">序幕 · 灯暗下来</p>
-      <h1 class="hero__title">
-        <span>你今天</span>
-        <span>叼回了 <em>3</em> 个球</span>
-      </h1>
-      <p class="lede">
-        桌上这四样东西，就是全部功能。<br>
-        点哪样，狗就带你去哪。
-      </p>
+.svg-defs{ position:absolute; width:0; height:0; }
 
-      <div class="stamp" aria-hidden="true">
-        <span class="stamp__cn">今天</span>
-        <span class="stamp__no" id="stampLine">0 条痕迹</span>
-      </div>
+/* ─────────── 背景三层 ─────────── */
+.paper{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.45), transparent 60%),
+    var(--paper);
+  filter:brightness(calc(1 - var(--warm) * .1)) saturate(calc(1 - var(--warm) * .16));
+  transition:filter 1.2s ease, background 1.2s ease;
+}
+.paper-tile{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:url("../patterns/tile-puppy.png");
+  background-size:460px;
+  opacity:.07; mix-blend-mode:multiply;
+  transition:opacity 1.2s ease, background-size 1.2s ease;
+}
+body[data-act="2"] .paper-tile{ opacity:.05; background-size:520px; }
+body[data-act="3"] .paper-tile{ opacity:.09; background-size:400px; }
+body[data-act="4"] .paper-tile{ opacity:.035; background-size:600px; }
 
-      <div class="desk">
-        <button class="thing thing--paper" data-go="1" aria-label="碎片带">
-          <span class="thing__art">
-            <i class="pile p1"></i><i class="pile p2"></i><i class="pile p3"></i>
-          </span>
-          <b>碎片带</b>
-          <em>26 片 · 横向滑动</em>
-        </button>
+.grain{
+  position:fixed; inset:0; z-index:9998; pointer-events:none; opacity:.4;
+  background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'>\
+<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/>\
+<feColorMatrix type='saturate' values='0'/></filter>\
+<rect width='180' height='180' filter='url(%23n)' opacity='.32'/></svg>");
+  mix-blend-mode:multiply;
+}
 
-        <button class="thing thing--map" data-go="2" aria-label="星图">
-          <span class="thing__art">
-            <svg viewBox="0 0 80 80" aria-hidden="true">
-              <g stroke="#D3C3A9" stroke-width="1" stroke-dasharray="2 3">
-                <path d="M14 56 L30 28 L50 34 L64 18"/><path d="M30 28 L38 58"/>
-                <path d="M50 34 L38 58"/><path d="M64 18 L50 34"/>
-              </g>
-              <g fill="#DFA23F">
-                <circle cx="14" cy="56" r="4"/><circle cx="30" cy="28" r="5"/>
-                <circle cx="50" cy="34" r="4"/><circle cx="64" cy="18" r="4.5"/>
-              </g>
-              <circle cx="38" cy="58" r="3.5" fill="#C2523A"/>
-            </svg>
-          </span>
-          <b>星图</b>
-          <em>90 个点 · 可筛选</em>
-        </button>
+/* 顶部阅读进度 = 幕进度 */
+.progress{
+  position:fixed; left:0; top:0; height:2px; z-index:200;
+  background:var(--rust); width:0;
+  transition:width .8s cubic-bezier(.2,.8,.2,1);
+}
 
-        <button class="thing thing--radio" data-go="3" aria-label="电台">
-          <span class="thing__art"><img src="assets/props/turntable.png" alt="" draggable="false"></span>
-          <b>电台</b>
-          <em>3 期 · 有声音</em>
-        </button>
+/* ─────────── 光标 ─────────── */
+.cursor{ position:fixed; left:0; top:0; z-index:9999; pointer-events:none; opacity:0; transition:opacity .3s; }
+.cursor.is-live{ opacity:1; }
+.cursor__dot{
+  display:block; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%;
+  background:var(--rust);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), background .2s;
+}
+.cursor.is-big .cursor__dot{ transform:scale(3.4); background:rgba(194,82,58,.2); }
+@media (hover:none){ .cursor{ display:none; } }
 
-        <button class="thing thing--dog" id="dogThing" aria-label="摸摸狗">
-          <span class="thing__art"><img src="assets/dogs/smug.png" alt="" draggable="false"></span>
-          <b>摸摸狗</b>
-          <em>它会叫</em>
-        </button>
-      </div>
+/* ─────────── 幕布 ─────────── */
+.curtain{
+  position:fixed; inset:0; z-index:150; pointer-events:none;
+  background:linear-gradient(180deg, #8f3a29 0%, #a8452f 45%, #8f3a29 100%);
+  transform:scaleY(0); transform-origin:top;
+  transition:transform .62s cubic-bezier(.7,0,.3,1);
+}
+.curtain.is-down{ transform:scaleY(1); transform-origin:top; }
+.curtain.is-up{ transform:scaleY(0); transform-origin:bottom; }
 
-      <p class="hero__meta">
-        <span>0 条痕迹</span><span>0 个主题</span><span>跨 2 种媒介</span>
-      </p>
-    </div>
-  </section>
+/* ─────────── 顶栏 ─────────── */
+.topbar{
+  position:fixed; inset:0 0 auto 0; z-index:60;
+  display:flex; align-items:center; gap:18px;
+  padding:18px clamp(20px,4vw,56px);
+  mix-blend-mode:multiply;
+}
+.brand{ display:flex; align-items:baseline; gap:10px; text-decoration:none; color:inherit; }
+.brand__cn{ font-family:var(--serif); font-size:26px; font-weight:900; letter-spacing:.04em; }
+.brand__en{ font-family:var(--mono); font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); }
 
-  <!-- 第一幕：碎片带（横向滑动） -->
-  <section class="act" data-act="1" data-pose="scraps">
-    <div class="act__inner act__inner--drift">
-      <header class="act__head act__head--tight">
-        <p class="act__no">Act I</p>
-        <h2>碎片带</h2>
-        <p class="act__sub" id="scrapsSub">这一年，你在这条带上留下了这些痕迹。拖一下，让它过去。</p>
-      </header>
-      <div class="drift" id="drift">
-        <div class="drift__track" id="driftTrack"></div>
-        <div class="drift__ruler" aria-hidden="true"></div>
-      </div>
-      <p class="act__hint">拖动或滚轮横向滑 · 点一张看这个主题的全部痕迹 · 点右下角时长听一期</p>
-    </div>
-  </section>
+.programme-btn{
+  margin-left:auto; display:flex; align-items:center; gap:9px;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:7px 14px; cursor:pointer;
+  font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:var(--ink-soft);
+  transition:border-color .25s, color .25s, background .25s;
+}
+.programme-btn:hover{ border-color:var(--rust); color:var(--rust); background:rgba(194,82,58,.05); }
+.programme-btn__lines{ display:flex; flex-direction:column; gap:2px; }
+.programme-btn__lines i{ display:block; width:12px; height:1px; background:currentColor; }
 
-  <!-- 第二幕：星图 -->
-  <section class="act" data-act="2" data-pose="map">
-    <div class="act__inner act__inner--split">
-      <div class="map__text">
-        <p class="act__no">Act II</p>
-        <h2>星图</h2>
-        <p class="act__sub">每个点是你留下的一道痕迹；<br>每条线，是同一个问题在不同地方出现。</p>
-        <p class="map__stat"></p>
-        <div class="map__filter" id="mapFilter">
-          <button class="map__chip on" data-med="">全部</button>
-          <button class="map__chip" data-med="书摘">书摘</button>
-          <button class="map__chip" data-med="电影">电影</button>
-        </div>
-        <p class="map__tip">把鼠标放到点上，看它跟谁是一伙的。</p>
-      </div>
-      <div class="map__canvas" id="mapCanvas">
-        <svg viewBox="0 0 660 440" role="img" aria-label="个人知识星图">
-          <g class="links"></g><g class="nodes"></g>
-        </svg>
-        <span class="map__cap">FIG. 01 · 个人知识星图</span>
-      </div>
-    </div>
-  </section>
+.sound{
+  display:flex; align-items:center; gap:8px;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:7px 13px; cursor:pointer; color:var(--ink-soft);
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  transition:border-color .25s, color .25s;
+}
+.sound:hover{ border-color:var(--rust); color:var(--rust); }
+.sound__bars{ display:flex; align-items:flex-end; gap:2px; height:11px; }
+.sound__bars i{ display:block; width:2px; height:3px; background:currentColor; }
+.sound[aria-pressed="true"] .sound__bars i{ animation:bars .9s infinite ease-in-out; }
+.sound[aria-pressed="true"] .sound__bars i:nth-child(2){ animation-delay:.15s; }
+.sound[aria-pressed="true"] .sound__bars i:nth-child(3){ animation-delay:.3s; }
+@keyframes bars{ 0%,100%{height:3px} 50%{height:11px} }
 
-  <!-- 第三幕：电台（整页唱机） -->
-  <section class="act" data-act="3" data-pose="radio">
-    <div class="act__inner">
-      <header class="act__head act__head--tight">
-        <p class="act__no">Act III</p>
-        <h2>电台</h2>
-        <p class="act__sub">一段书摘、一句台词，做成一期只给你一个人听的节目。</p>
-      </header>
-      <div class="studio">
-        <div class="radio-dock" id="radioDock"></div>
-        <aside class="studio__list" id="episodes" aria-label="期数列表"></aside>
-      </div>
-      <p class="act__hint">点左边期数换一期 · 点脚本里任意一句从那儿开始 · ⌄ 收起播放条</p>
-    </div>
-  </section>
+/* ─────────── 常驻角色 ─────────── */
+.cast{
+  position:fixed; inset:0; z-index:40; pointer-events:none;
+  --cx:0px; --cy:0px; --cr:0deg; --cs:1;
+  transition:transform .8s cubic-bezier(.2,.8,.2,1);
+}
+.cast__main{
+  position:absolute; right:clamp(10px,4vw,90px); bottom:clamp(60px,9vh,130px);
+  width:clamp(180px,21vw,320px); z-index:1;
+  transform:translate3d(var(--cx),var(--cy),0) rotate(var(--cr)) scale(var(--cs));
+  transform-origin:50% 90%;
+  will-change:transform;
+  transition:width .8s cubic-bezier(.2,.8,.2,1);
+}
+.cast__main img{
+  width:100%; display:block;
+  filter:
+    drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff)
+    drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
+    drop-shadow(0 22px 28px rgba(53,40,25,.22));
+  animation:breathe 4.6s ease-in-out infinite;
+  transform-origin:50% 95%;
+}
+.cast__main.is-swap img{ animation:swapIn .55s ease both, breathe 4.6s ease-in-out .55s infinite; }
+@keyframes breathe{
+  0%,100%{ transform:scale(1) rotate(0deg) }
+  50%    { transform:scale(1.018,1.03) rotate(-.6deg) }
+}
+@keyframes swapIn{
+  from{ opacity:0; transform:translateY(10px) scale(.94) }
+  to  { opacity:1; transform:none }
+}
 
-  <!-- 尾声 -->
-  <section class="act" data-act="4" data-pose="about">
-    <div class="act__inner act__inner--center">
-      <p class="act__no">Epilogue</p>
-      <h2 class="about__big">推荐系统一直在解决「你可能喜欢什么」。<br>没人解决「你一直在想什么」。</h2>
-      <p class="about__body">
-        拾字狗把你在书和电影里留下的痕迹放进同一个语义空间，
-        找出你反复在问的那几个问题，再做成一期只给你一个人听的播客。
-        它不是摘要工具——摘要处理一篇，它处理你。
-      </p>
-      <footer class="foot">
-        <p>拾字狗 WordRetriever · 五幕</p>
-        <p class="foot__note">角色素材来自本人收集的插画参考图，仅作课程演示使用。</p>
-      </footer>
-      <button class="next-btn next-btn--bare" data-go="0"><em>↑</em><span>回到序幕</span></button>
-    </div>
-  </section>
+.cast__side{
+  position:absolute; right:clamp(130px,19vw,320px);
+  bottom:calc(clamp(60px,9vh,130px) + clamp(96px,11vw,168px));
+  width:clamp(66px,6.6vw,96px); z-index:2;
+  opacity:0; transform:translateY(14px) rotate(-8deg) scale(.9);
+  transition:opacity .5s, transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.cast__side img{
+  width:100%; display:block;
+  filter:
+    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+    drop-shadow(0 10px 16px rgba(53,40,25,.2));
+}
+.cast__side.is-in{ opacity:1; transform:translateY(0) rotate(-8deg) scale(1); }
 
-</main>
+.bubble{
+  position:absolute; right:clamp(20px,4vw,90px); z-index:3;
+  bottom:calc(clamp(60px,9vh,130px) + clamp(180px,21vw,320px) + 18px);
+  max-width:min(260px,24vw);
+  padding:13px 17px 12px;
+  background:var(--card); border:1px solid var(--line);
+  border-radius:14px 14px 4px 14px;
+  box-shadow:0 14px 24px -16px rgba(60,44,26,.5);
+  opacity:0; transform:translateY(8px);
+  transition:opacity .5s, transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.bubble.is-in{ opacity:1; transform:none; }
+.bubble__main{ font-size:13.5px; line-height:1.7; color:var(--ink); }
+.bubble__side{
+  font-size:12.5px; line-height:1.7; color:var(--rust); margin-top:6px;
+  padding-top:6px; border-top:1px dashed var(--line);
+}
+.bubble__side:empty{ display:none; }
 
-<!-- ───────── 幕间导航 ───────── -->
-<button class="back" id="backBtn">← 桌面</button>
+/* ─────────── 舞台与幕 ─────────── */
+.stage{ position:fixed; inset:0; z-index:1; }
 
-<!-- ───────── 节目单 ───────── -->
-<div class="programme" id="programme" aria-hidden="true">
-  <div class="programme__paper"></div>
-  <div class="programme__inner">
-    <p class="programme__kicker">Programme</p>
-    <h2>拾字狗 · 五幕</h2>
-    <p class="programme__note">建议戴耳机。用节目单或 ↑↓ 换幕。</p>
-    <ol class="programme__list">
-      <li><button data-go="0"><b>序幕</b><span>灯暗下来</span></button></li>
-      <li><button data-go="1"><b>Act I · 碎片</b><span>你今天叼回来的那几张纸</span></button></li>
-      <li><button data-go="2"><b>Act II · 星图</b><span>你的痕迹长成了一张网</span></button></li>
-      <li><button data-go="3"><b>Act III · 电台</b><span>三种材料，一期播客</span></button></li>
-      <li><button data-go="4"><b>尾声</b><span>它到底在解决什么</span></button></li>
-    </ol>
-    <button class="programme__close" id="programmeClose">×</button>
-  </div>
-</div>
+.act{
+  position:absolute; inset:0;
+  opacity:0; pointer-events:none;
+  transform:translateY(34px) scale(.995);
+  transition:opacity .7s cubic-bezier(.2,.8,.2,1),
+             transform .7s cubic-bezier(.2,.8,.2,1);
+  will-change:opacity, transform;
+}
+.act.is-active{ opacity:1; pointer-events:auto; transform:none; }
+.act.is-before{ transform:translateY(-34px) scale(.995); }
+.act.is-after{ transform:translateY(34px) scale(.995); }
 
-<script src="assets/js/data.js"></script>
-<script src="assets/js/data.local.js"></script>
-<script src="assets/js/render.js"></script>
-<script src="assets/js/detail.js"></script>
-<script src="assets/js/player.js"></script>
-<script src="assets/js/main.js"></script>
-</body>
-</html>
+.act__inner{
+  height:100%; overflow-y:auto; overscroll-behavior:contain;
+  padding:clamp(84px,10vh,120px) clamp(20px,4vw,56px) clamp(90px,12vh,130px);
+}
+.act__inner--center{
+  display:flex; flex-direction:column; justify-content:center;
+  max-width:1180px;
+}
+.act__inner--split{
+  display:grid; grid-template-columns:1fr 1.15fr; gap:clamp(30px,5vw,72px);
+  align-items:center; overflow:hidden;
+}
+
+.act__no{
+  font-family:var(--mono); font-size:11px; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--rust);
+}
+.act__head{ margin-bottom:clamp(28px,4vh,52px); }
+.act__head h2{
+  font-family:var(--serif); font-size:clamp(30px,3.6vw,48px); font-weight:900;
+  line-height:1.2; margin-top:6px;
+}
+.act__sub{ color:var(--ink-soft); font-size:15px; margin-top:10px; max-width:40em; }
+.act__hint{
+  margin-top:26px; font-family:var(--mono); font-size:11px;
+  letter-spacing:.1em; color:var(--ink-faint);
+}
+
+/* 序幕 */
+.kicker{
+  font-family:var(--mono); font-size:12px; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--rust); display:flex; align-items:center; gap:12px;
+}
+.kicker::before{ content:""; width:38px; height:1px; background:var(--rust); }
+
+.hero__title{
+  font-family:var(--serif); font-size:clamp(48px,7vw,96px); line-height:.98;
+  letter-spacing:-.01em; margin:20px 0 22px; display:flex; flex-direction:column;
+}
+.hero__title em{
+  font-style:normal; color:var(--rust); font-size:1.14em;
+  line-height:.8; vertical-align:-.06em; padding:0 .06em;
+}
+.lede{ max-width:30em; color:var(--ink-soft); font-size:15.5px; line-height:2; }
+.hero__meta{
+  display:flex; gap:24px; margin-top:34px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.18em; color:var(--ink-faint);
+}
+.hero__meta span{ display:flex; align-items:center; gap:8px; }
+.hero__meta span::before{ content:"◦"; color:var(--mustard); }
+
+.next-btn{
+  align-self:flex-start; margin-top:38px;
+  display:flex; align-items:center; gap:12px;
+  background:none; border:0; padding:0; cursor:pointer;
+  font-family:var(--mono); font-size:12px; letter-spacing:.16em; color:var(--ink-soft);
+  transition:color .25s, gap .25s;
+}
+.next-btn em{
+  font-style:normal; width:30px; height:30px; border:1px solid var(--line);
+  border-radius:50%; display:grid; place-items:center; font-size:13px;
+  transition:border-color .25s, background .25s, color .25s;
+}
+.next-btn:hover{ color:var(--rust); gap:16px; }
+.next-btn:hover em{ border-color:var(--rust); background:var(--rust); color:var(--card); }
+.next-btn--bare{ margin-top:44px; font-size:11px; color:var(--ink-faint); }
+
+/* ─────────── 碎片卡 ─────────── */
+.scraps__grid{
+  display:grid; gap:clamp(24px,3vw,44px);
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  max-width:1060px;
+}
+.scrap{
+  position:relative; padding:92px 28px 22px; cursor:zoom-in;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.scrap__paper{
+  position:absolute; inset:0; z-index:0; background:var(--card);
+  filter:url(#torn);
+  box-shadow:0 16px 30px -18px rgba(60,44,26,.5);
+}
+.scrap > *:not(.scrap__paper){ position:relative; z-index:1; }
+
+.scrap__dog{
+  position:absolute; z-index:2; width:160px; left:50%; top:-78px; margin-left:-80px;
+  filter:
+    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+    drop-shadow(0 12px 16px rgba(60,44,26,.26));
+  transition:transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.scrap:nth-child(2) .scrap__dog{ width:176px; margin-left:-88px; top:-86px; }
+.scrap:nth-child(3) .scrap__dog{ width:168px; margin-left:-84px; top:-82px; }
+.scrap:hover .scrap__dog{ transform:translateY(-9px) rotate(-7deg) scale(1.04); }
+
+.scrap__no{ font-family:var(--mono); font-size:10.5px; letter-spacing:.24em; color:var(--rust); text-transform:uppercase; }
+.scrap__q{ font-family:var(--serif); font-size:26px; font-weight:900; line-height:1.3; margin:9px 0 16px; }
+.scrap blockquote{
+  font-size:14.5px; line-height:1.85; padding-left:13px; border-left:2px solid var(--mustard);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.scrap__cite{ font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; color:var(--ink-faint); margin-top:9px; padding-left:15px; }
+.scrap__foot{
+  display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+  margin-top:20px; padding-top:14px; border-top:1px dashed var(--line);
+}
+.tag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.08em; padding:3px 9px;
+  border:1px solid var(--line); border-radius:999px; color:var(--ink-soft);
+}
+.play{
+  margin-left:auto; display:flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em;
+  background:none; border:0; color:var(--rust); cursor:pointer;
+}
+.play__bars{ display:flex; align-items:flex-end; gap:2px; height:11px; }
+.play__bars i{ display:block; width:2px; height:4px; background:currentColor; }
+.play.is-on .play__bars i{ animation:bars .9s infinite ease-in-out; }
+
+/* ─────────── 星图 ─────────── */
+.map__text h2{ font-family:var(--serif); font-size:clamp(28px,3.2vw,44px); font-weight:900; margin-top:6px; }
+.map__stat{ font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; color:var(--ink-faint); margin-top:22px; }
+.map__stat b{ color:var(--rust); font-weight:400; }
+.map__tip{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--ink-faint); margin-top:10px; }
+
+.map__canvas{
+  position:relative; border:1px solid var(--line); background:var(--paper-2);
+  padding:clamp(14px,2vw,28px);
+}
+.map__canvas svg{ width:100%; height:auto; display:block; overflow:visible; }
+.map__cap{ position:absolute; right:12px; bottom:6px; font-family:var(--mono); font-size:9.5px; letter-spacing:.18em; color:var(--ink-faint); }
+
+.map__canvas .links path{ fill:none; stroke:var(--line); stroke-width:1.6; stroke-dasharray:5 6; }
+.map__canvas .nodes circle{ fill:var(--mustard); stroke:var(--paper-2); stroke-width:3; cursor:zoom-in; }
+.map__canvas .nodes circle:nth-child(3n){ fill:var(--rust); }
+.map__canvas .nodes circle:nth-child(4n){ fill:var(--sage); }
+.map__canvas .nodes circle.big{ fill:var(--ink); }
+.map__canvas .nodes circle, .map__canvas .links path{ transition:opacity .18s, stroke-width .18s; }
+.map__canvas .nodes circle.is-dim{ opacity:.14; }
+.map__canvas .nodes circle.is-hot{ stroke:var(--rust); stroke-width:2; }
+.map__canvas .links path.is-dim{ opacity:.06; }
+.map__canvas .links path.is-hot{ stroke:var(--rust); stroke-opacity:.75; stroke-width:2; }
+
+/* ─────────── 电台（幕内列表） ─────────── */
+.episodes{
+  display:grid; gap:clamp(18px,2.4vw,30px);
+  grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+  max-width:1060px;
+}
+.episode{
+  position:relative; padding:26px 26px 22px; cursor:pointer;
+  background:var(--paper-2); border:1px solid var(--line);
+  transition:transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s, border-color .3s;
+}
+.episode:hover{ transform:translateY(-5px); border-color:var(--rust); box-shadow:0 18px 30px -22px rgba(60,44,26,.6); }
+.episode__no{ font-family:var(--mono); font-size:10.5px; letter-spacing:.24em; color:var(--rust); text-transform:uppercase; }
+.episode__q{ font-family:var(--serif); font-size:23px; font-weight:900; line-height:1.32; margin:8px 0 14px; }
+.episode__meta{ font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:var(--ink-faint); }
+.episode__play{
+  margin-top:18px; display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; color:var(--rust);
+}
+.episode__play i{
+  width:26px; height:26px; border-radius:50%; background:var(--rust); color:var(--card);
+  display:grid; place-items:center; font-style:normal; font-size:10px;
+}
+.episode__badge{
+  position:absolute; right:20px; top:20px;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+  padding:3px 9px; border-radius:999px;
+  background:rgba(194,82,58,.12); color:var(--rust);
+}
+
+/* ─────────── 尾声 ─────────── */
+.about__big{
+  font-family:var(--serif); font-size:clamp(24px,3.1vw,42px); font-weight:900;
+  line-height:1.42; margin:18px 0 30px; text-wrap:balance;
+}
+.about__body{ color:var(--ink-soft); max-width:34em; font-size:15.5px; line-height:2; }
+.foot{
+  display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  max-width:min(100%,860px);
+  margin-top:64px; padding-top:22px; border-top:1px solid var(--line);
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; color:var(--ink-soft);
+}
+.foot p{ max-width:32em; }
+
+/* ─────────── 幕间导航 ─────────── */
+.actnav{
+  position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+  z-index:70; display:flex; align-items:center; gap:10px;
+  padding:6px 8px; border-radius:999px;
+  background:rgba(251,246,232,.82); backdrop-filter:blur(6px);
+  border:1px solid var(--line);
+}
+.actnav button{
+  width:28px; height:28px; border-radius:50%; cursor:pointer;
+  background:none; border:1px solid var(--line); color:var(--ink-soft);
+  font-size:12px; line-height:1; transition:background .2s, color .2s, border-color .2s;
+}
+.actnav button:hover{ background:var(--rust); border-color:var(--rust); color:var(--card); }
+.actnav__label{ font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; color:var(--ink-soft); min-width:76px; text-align:center; }
+
+/* ─────────── 节目单 ─────────── */
+.programme{
+  position:fixed; inset:0; z-index:140;
+  display:grid; place-items:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .45s;
+}
+.programme.is-open{ opacity:1; pointer-events:auto; }
+.programme__paper{
+  position:absolute; inset:0; background:rgba(43,38,32,.55);
+  backdrop-filter:blur(3px);
+}
+.programme__inner{
+  position:relative; width:min(560px,88vw); padding:44px 46px 38px;
+  background:var(--paper-2);
+  box-shadow:0 40px 90px -40px rgba(0,0,0,.6);
+  transform:translateY(16px) scale(.985);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.programme.is-open .programme__inner{ transform:none; }
+.programme__kicker{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.32em;
+  text-transform:uppercase; color:var(--rust);
+}
+.programme__inner h2{
+  font-family:var(--serif); font-size:30px; font-weight:900; margin:8px 0 6px;
+}
+.programme__note{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-faint); margin-bottom:24px; }
+.programme__list{ list-style:none; border-top:1px solid var(--line); }
+.programme__list button{
+  width:100%; display:flex; align-items:baseline; gap:14px;
+  padding:13px 4px; background:none; border:0; border-bottom:1px dashed var(--line);
+  cursor:pointer; text-align:left; color:inherit;
+  transition:padding-left .3s, color .25s;
+}
+.programme__list button:hover{ padding-left:12px; color:var(--rust); }
+.programme__list b{ font-family:var(--serif); font-size:16px; font-weight:900; min-width:118px; }
+.programme__list span{ font-size:13px; color:var(--ink-soft); }
+.programme__close{
+  position:absolute; right:18px; top:16px; width:30px; height:30px;
+  background:none; border:1px solid var(--line); border-radius:50%;
+  font-size:17px; line-height:1; color:var(--ink-soft); cursor:pointer;
+}
+.programme__close:hover{ border-color:var(--rust); color:var(--rust); }
+
+/* ─────────── 详情层 ─────────── */
+.sheet{
+  position:fixed; inset:0; z-index:130; display:flex; justify-content:flex-end;
+  pointer-events:none;
+}
+.sheet__paper{ position:absolute; inset:0; background:rgba(43,38,32,.28); opacity:0; transition:opacity .35s; }
+.sheet .sheet__inner{
+  position:relative; width:min(560px,92vw); height:100%;
+  background:var(--paper-2);
+  transform:translateX(102%);
+  transition:transform .55s cubic-bezier(.2,.8,.2,1);
+  display:flex; flex-direction:column;
+  box-shadow:-24px 0 60px -30px rgba(60,44,26,.6);
+}
+.sheet.is-open{ pointer-events:auto; }
+.sheet.is-open .sheet__paper{ opacity:1; }
+.sheet.is-open .sheet__inner{ transform:none; }
+
+.sheet__head{ position:relative; padding:24px 26px 16px; border-bottom:1px solid var(--line); }
+.sheet__no{ font-family:var(--mono); font-size:10.5px; letter-spacing:.24em; color:var(--rust); text-transform:uppercase; }
+.sheet__title{ font-family:var(--serif); font-size:22px; font-weight:900; line-height:1.35; margin:8px 44px 6px 0; }
+.sheet__meta{ font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:var(--ink-faint); }
+.sheet__close{
+  position:absolute; right:16px; top:16px; width:30px; height:30px;
+  background:none; border:1px solid var(--line); border-radius:50%;
+  font-size:17px; line-height:1; color:var(--ink-soft); cursor:pointer;
+}
+.sheet__close:hover{ border-color:var(--rust); color:var(--rust); }
+
+.sheet__tools{ margin-top:12px; display:flex; flex-direction:column; gap:9px; }
+.sheet__chips{ display:flex; gap:7px; flex-wrap:wrap; }
+.sheet__chip{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:4px 11px; color:var(--ink-soft); cursor:pointer;
+  transition:border-color .2s, color .2s, background .2s;
+}
+.sheet__chip b{ font-weight:400; color:var(--ink-faint); margin-left:4px; }
+.sheet__chip:hover:not(:disabled){ border-color:var(--rust); color:var(--rust); }
+.sheet__chip.on{ background:var(--ink); border-color:var(--ink); color:var(--card); }
+.sheet__chip.on b{ color:rgba(255,255,255,.65); }
+.sheet__chip:disabled{ opacity:.32; cursor:default; }
+.sheet__search{
+  width:100%; font-family:var(--sans); font-size:13px;
+  background:rgba(255,255,255,.6); border:1px solid var(--line); border-radius:8px;
+  padding:7px 12px; color:var(--ink); outline:none;
+}
+.sheet__search:focus{ border-color:var(--rust); background:#fff; }
+
+.sheet__list{ list-style:none; overflow-y:auto; padding:8px 26px 60px; flex:1; }
+.sheet__row{ display:grid; grid-template-columns:56px 1fr; gap:10px; padding:13px 0; border-bottom:1px dashed var(--line); }
+.sheet__row:last-child{ border-bottom:0; }
+.sheet__tag{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.06em;
+  height:19px; line-height:19px; text-align:center; border-radius:999px; align-self:start;
+}
+.sheet__tag--book{ background:rgba(223,162,63,.22); color:#8a5f16; }
+.sheet__tag--podcast{ background:rgba(194,82,58,.16); color:#a8452f; }
+.sheet__tag--movie{ background:rgba(126,144,112,.22); color:#4d5c40; }
+.sheet__text{ font-size:14px; line-height:1.85; grid-column:2; }
+.sheet__cite{ grid-column:2; font-family:var(--mono); font-size:10px; color:var(--ink-faint); margin-top:4px; font-style:normal; }
+.sheet__back{ padding:22px 0; text-align:center; }
+.sheet__back button{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:8px 18px; color:var(--rust); cursor:pointer;
+}
+.sheet__back button:hover{ background:var(--rust); color:var(--card); border-color:var(--rust); }
+.sheet__empty{ padding:40px 0; text-align:center; color:var(--ink-faint); font-size:13px; }
+body.sheet-open{ overflow:hidden; }
+
+/* ─────────── 电台播放器 ─────────── */
+.radio{
+  position:fixed; left:0; right:0; bottom:0; z-index:135;
+  max-height:64vh; display:flex; flex-direction:column;
+  padding:16px clamp(18px,4vw,56px) 18px;
+  transform:translateY(102%);
+  transition:transform .55s cubic-bezier(.2,.8,.2,1);
+  will-change:transform;
+}
+.radio.is-open{ transform:none; }
+.radio__paper{
+  position:absolute; inset:0; z-index:0; background:var(--card);
+  filter:url(#torn);
+  box-shadow:0 -18px 40px -24px rgba(60,44,26,.55);
+}
+.radio > *:not(.radio__paper){ position:relative; z-index:1; }
+.radio__head{ display:flex; align-items:center; gap:14px; padding-bottom:10px; }
+.radio__badge{
+  font-family:var(--mono); font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--card); background:var(--rust); padding:3px 9px; border-radius:999px;
+}
+.radio__title{ font-family:var(--serif); font-size:19px; font-weight:900; }
+.radio__close{
+  margin-left:auto; background:none; border:0; font-size:23px; line-height:1;
+  color:var(--ink-soft); cursor:pointer; padding:0 4px;
+}
+.radio__close:hover{ color:var(--rust); }
+.radio__lines{
+  list-style:none; overflow-y:auto; min-height:0; flex:1;
+  border-top:1px dashed var(--line); padding-top:8px;
+}
+.radio__line{
+  display:grid; grid-template-columns:30px 1fr; gap:10px;
+  padding:7px 6px; border-radius:8px; cursor:pointer;
+  opacity:.45; transition:opacity .3s, background .3s;
+}
+.radio__line:hover{ opacity:.8; }
+.radio__line.on{ opacity:1; background:rgba(223,162,63,.16); }
+.radio__who{ font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); padding-top:3px; }
+.radio__line--dog .radio__who{ color:var(--rust); }
+.radio__text{ font-size:14px; line-height:1.7; }
+.radio__line--dog .radio__text{ color:var(--ink-soft); }
+.radio__cite{ grid-column:2; font-family:var(--mono); font-size:10px; color:var(--ink-faint); margin-top:2px; }
+.radio__foot{
+  display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+  padding-top:10px; border-top:1px dashed var(--line); margin-top:6px;
+}
+.radio__btn{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.1em;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:5px 13px; color:var(--ink-soft); cursor:pointer;
+  transition:border-color .2s, color .2s, background .2s;
+}
+.radio__btn:hover{ border-color:var(--rust); color:var(--rust); }
+.radio__btn--main{ background:var(--rust); border-color:var(--rust); color:var(--card); }
+.radio__meta{ margin-left:auto; font-family:var(--mono); font-size:10px; color:var(--ink-faint); }
+
+/* ─────────── 减少动态效果 ─────────── */
+@media (prefers-reduced-motion: reduce){
+  *{ transition-duration:.01ms !important; animation-duration:.01ms !important; }
+  .curtain{ display:none; }
+}
+
+/* ─────────── 黑胶唱片 ─────────── */
+.radio__stage{ display:flex; gap:clamp(16px,2.2vw,30px); align-items:stretch; flex:1; min-height:0; }
+.turntable{
+  position:relative; flex:none; align-self:flex-start; width:clamp(112px,10.5vw,152px); aspect-ratio:1;
+  margin-top:6px;
+}
+.turntable__plinth{
+  position:absolute; inset:-5%; border-radius:12px;
+  background:linear-gradient(160deg,#3a2f26,#241d18);
+  box-shadow:0 14px 26px -16px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.vinyl{
+  position:absolute; inset:0; border-radius:50%;
+  background:
+    repeating-radial-gradient(circle at 50% 50%,
+      #191513 0 1px, #24201c 1px 2.5px, #1d1917 2.5px 4px);
+  box-shadow:inset 0 0 26px rgba(0,0,0,.85), 0 6px 14px -8px rgba(0,0,0,.8);
+  animation:spin 5.2s linear infinite;
+  animation-play-state:paused;
+}
+.vinyl::after{
+  content:""; position:absolute; inset:0; border-radius:50%;
+  background:conic-gradient(from 20deg,
+    rgba(255,240,220,0) 0deg, rgba(255,240,220,.16) 26deg,
+    rgba(255,240,220,0) 58deg, rgba(255,240,220,0) 180deg,
+    rgba(255,240,220,.1) 206deg, rgba(255,240,220,0) 240deg);
+  mix-blend-mode:screen; pointer-events:none;
+}
+.vinyl__label{
+  position:absolute; inset:31%; border-radius:50%;
+  background:radial-gradient(circle at 40% 35%, #d8664c, var(--rust) 62%, #9c4029);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), 0 0 0 3px #17130f;
+  display:grid; place-items:center; overflow:hidden;
+}
+.vinyl__label span{
+  font-family:var(--mono); font-size:7px; line-height:1.3; letter-spacing:.02em;
+  color:rgba(255,255,255,.86); text-align:center; padding:0 8px;
+  word-break:break-all;
+}
+.vinyl__label::after{
+  content:""; position:absolute; width:9%; aspect-ratio:1; border-radius:50%;
+  background:#17130f; box-shadow:inset 0 1px 1px rgba(255,255,255,.25);
+}
+.tonearm{
+  position:absolute; right:-10%; top:-9%; width:58%; height:5%;
+  transform-origin:92% 50%; transform:rotate(-34deg);
+  transition:transform 1s cubic-bezier(.2,.8,.2,1);
+  z-index:2;
+}
+.tonearm i{
+  display:block; width:100%; height:100%; border-radius:3px;
+  background:linear-gradient(180deg,#d8d2c6,#8d857a 55%,#5f584e);
+  box-shadow:0 2px 4px rgba(0,0,0,.4);
+}
+.tonearm::after{
+  content:""; position:absolute; right:-6%; top:50%; width:16px; height:16px;
+  margin-top:-8px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #f0ebe0, #9c9488 70%);
+  box-shadow:0 2px 5px rgba(0,0,0,.45);
+}
+.turntable__knob{
+  position:absolute; left:6%; bottom:-14%; width:12px; height:12px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #cfc7b8, #6d665c);
+  box-shadow:0 2px 4px rgba(0,0,0,.5);
+}
+.radio.is-playing .vinyl{ animation-play-state:running; }
+.radio.is-playing .tonearm{ transform:rotate(6deg); }
+@keyframes spin{ to{ transform:rotate(360deg) } }
+
+.radio__body{ flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
+
+/* ─────────── 纸团展开 ─────────── */
+.paperball{
+  position:relative; width:78px; height:78px; margin-top:38px;
+  cursor:pointer; border:0; padding:0; background:none;
+  animation:bob 3.4s ease-in-out infinite;
+}
+.paperball__ball{
+  position:absolute; inset:0; border-radius:46% 54% 52% 48%/50% 46% 54% 50%;
+  background:
+    repeating-conic-gradient(from 12deg at 46% 44%,
+      #f7f1e2 0 8deg, #ddd2ba 8deg 15deg, #efe7d5 15deg 26deg);
+  box-shadow:
+    inset 6px 8px 14px rgba(120,100,70,.35),
+    inset -8px -10px 16px rgba(255,255,255,.6),
+    0 12px 18px -10px rgba(60,44,26,.55);
+  filter:url(#crumpleBall);
+}
+.paperball::after{
+  content:"点它"; position:absolute; left:50%; top:calc(100% + 6px);
+  transform:translateX(-50%);
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.22em; color:var(--ink-faint);
+  white-space:nowrap;
+}
+@keyframes bob{ 0%,100%{ transform:translateY(0) rotate(-2deg) } 50%{ transform:translateY(-7px) rotate(2deg) } }
+
+.scrap.is-crumpled{
+  transform:scale(.62) rotate(-7deg);
+  opacity:.55;
+  transition:transform 1s cubic-bezier(.2,.8,.2,1), opacity 1s;
+}
+
+/* ─────────── 狗与云 ─────────── */
+.cast__cloud{
+  position:absolute; right:clamp(-10px,1vw,30px); bottom:clamp(70px,10vh,150px);
+  width:clamp(190px,23vw,340px); aspect-ratio:1.9; z-index:0;
+  opacity:0; transition:opacity 1s;
+  filter:blur(1px);
+}
+.cast__cloud.is-in{ opacity:.9; }
+.cast__cloud i{
+  position:absolute; border-radius:50%;
+  background:radial-gradient(circle at 42% 34%, #fffdf6, #efe4cf 72%, rgba(239,228,207,0));
+}
+.cast__cloud i:nth-child(1){ left:2%;  bottom:8%;  width:44%; aspect-ratio:1; }
+.cast__cloud i:nth-child(2){ left:24%; bottom:2%;  width:56%; aspect-ratio:1; }
+.cast__cloud i:nth-child(3){ left:52%; bottom:10%; width:40%; aspect-ratio:1; }
+.cast__cloud i:nth-child(4){ left:16%; bottom:22%; width:30%; aspect-ratio:1; }
+.cast__cloud.is-in i{ animation:cloudFloat 6.5s ease-in-out infinite; }
+.cast__cloud.is-in i:nth-child(2){ animation-delay:.6s; }
+.cast__cloud.is-in i:nth-child(3){ animation-delay:1.2s; }
+@keyframes cloudFloat{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-6px) } }
+
+.cast__main.is-live{ pointer-events:auto; cursor:pointer; }
+.cast__main.is-hop img{ animation:hop .62s cubic-bezier(.3,1.6,.5,1); }
+@keyframes hop{
+  0%{ transform:translateY(0) scale(1) }
+  35%{ transform:translateY(-26px) scale(1.06,.94) }
+  62%{ transform:translateY(0) scale(.95,1.06) }
+  100%{ transform:translateY(0) scale(1) }
+}
+.dogline{
+  position:fixed; z-index:120; pointer-events:none;
+  padding:8px 13px; border-radius:12px 12px 12px 3px;
+  background:var(--card); border:1px solid var(--line);
+  font-size:12.5px; color:var(--ink); white-space:nowrap;
+  box-shadow:0 10px 18px -14px rgba(60,44,26,.6);
+  opacity:0; transform:translateY(6px);
+  transition:opacity .3s, transform .3s;
+}
+.dogline.is-in{ opacity:1; transform:none; }
+/* ===========================================================
+   碎片带（横向滑动）
+   =========================================================== */
+.act__inner--drift{ overflow:hidden; display:flex; flex-direction:column; }
+.act__head--tight{ margin-bottom:clamp(14px,2vh,26px); flex:none; }
+
+.drift{
+  position:relative; flex:1; min-height:0;
+  margin:0 calc(-1 * clamp(20px,4vw,56px));
+  cursor:grab;
+}
+.drift:active{ cursor:grabbing; }
+.drift__track{
+  position:absolute; left:0; top:45%; height:0;
+  display:flex; align-items:center; will-change:transform;
+}
+.drift__ruler{
+  position:absolute; left:0; right:0; bottom:6%;
+  height:1px;
+  background:repeating-linear-gradient(90deg,
+    var(--line) 0 1px, transparent 1px 26px);
+  opacity:.55; pointer-events:none;
+}
+
+/* 带子上的每张纸 */
+.scrap--lane{
+  position:relative; flex:none;
+  width:clamp(210px,19vw,272px);
+  margin-right:clamp(18px,2.2vw,34px);
+  padding:64px 18px 16px;
+  transform:rotate(var(--tilt,0deg));
+  transition:transform .45s cubic-bezier(.2,.8,.2,1), filter .45s;
+}
+.scrap--lane:nth-child(4n+1){ --tilt:-2.2deg; }
+.scrap--lane:nth-child(4n+2){ --tilt:1.6deg; }
+.scrap--lane:nth-child(4n+3){ --tilt:-1.1deg; }
+.scrap--lane:nth-child(4n+4){ --tilt:2.4deg; }
+.scrap--lane.scrap--low{ translate:0 34px; }
+.scrap--lane.scrap--high{ translate:0 -30px; }
+.scrap--lane:hover{ transform:rotate(0deg) translateY(-10px) scale(1.03); z-index:5; }
+
+.scrap--lane .scrap__paper{
+  filter:url(#torn);
+  box-shadow:0 14px 26px -16px rgba(60,44,26,.5);
+}
+.scrap--lane .scrap__dog{
+  position:absolute; width:96px; left:50%; top:-56px; margin-left:-48px;
+  filter:
+    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+    drop-shadow(0 8px 12px rgba(60,44,26,.22));
+}
+.scrap--lane:nth-child(3n+2) .scrap__dog{ width:112px; margin-left:-56px; top:-64px; }
+.scrap--lane .scrap__no{ font-size:9.5px; }
+.scrap--lane blockquote{
+  font-size:13px; line-height:1.75; margin-top:8px;
+  padding-left:11px; border-left:2px solid var(--mustard);
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+}
+.scrap--lane .scrap__cite{ font-size:9.5px; margin-top:7px; padding-left:13px; }
+.scrap--lane .scrap__foot{ margin-top:12px; padding-top:10px; gap:5px; }
+.scrap--lane .tag{ font-size:9px; padding:2px 7px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.scrap--lane .play{ font-size:9.5px; }
+
+/* 纸团展开：球 -> 纸 */
+@keyframes unfoldIn{
+  0%{
+    opacity:0;
+    transform:translateY(26px) scale(.34) rotate(-16deg);
+    border-radius:50% 46% 54% 48%;
+    filter:blur(1.2px);
+  }
+  38%{
+    opacity:1;
+    transform:translateY(4px) scale(.92) rotate(4deg);
+    border-radius:42% 58% 46% 54%;
+    filter:blur(0);
+  }
+  64%{ transform:translateY(0) scale(1.04) rotate(-2deg); border-radius:14px; }
+  100%{ transform:none; border-radius:0; }
+}
+.scrap--lane.is-born{
+  animation:unfoldIn .92s cubic-bezier(.22,.9,.24,1) both;
+}
+.scrap--lane.is-born .scrap__paper{
+  animation:unfoldShade .92s ease both;
+}
+@keyframes unfoldShade{
+  0%{ opacity:.65; transform:scale(.96); }
+  60%{ opacity:1; transform:scale(1.01); }
+  100%{ opacity:1; transform:none; }
+}
+
+/* 序幕的纸团 -> 带子 */
+.unfold-hint{
+  display:inline-flex; align-items:center; gap:10px; margin-top:26px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; color:var(--ink-faint);
+}
+.unfold-hint i{
+  width:16px; height:16px; border-radius:46% 54% 52% 48%;
+  background:repeating-conic-gradient(from 12deg at 46% 44%,
+    #f7f1e2 0 20deg, #ddd2ba 20deg 34deg);
+  box-shadow:inset 2px 2px 4px rgba(120,100,70,.35); display:block;
+}
+
+/* ===========================================================
+   电台：唱机 + 耳机
+   =========================================================== */
+.turntable__ring{
+  position:absolute; inset:-13%; border-radius:50%;
+  border:1px dashed rgba(43,38,32,.18);
+  pointer-events:none;
+}
+.turntable__ui{
+  position:absolute; left:50%; bottom:-15%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:6px;
+  padding:3px 8px; border-radius:999px;
+  background:rgba(251,246,232,.9); border:1px solid var(--line);
+  font-family:var(--mono); font-size:7.5px; letter-spacing:.1em; color:var(--ink-soft);
+  white-space:nowrap;
+}
+.turntable__ui i{
+  width:0; height:0; border-left:5px solid var(--rust);
+  border-top:3.5px solid transparent; border-bottom:3.5px solid transparent;
+  display:block; font-style:normal;
+}
+.radio.is-playing .turntable__ui i{
+  width:5px; height:6px; border:0;
+  background:linear-gradient(90deg,var(--rust) 0 1.5px,transparent 1.5px 3.5px,var(--rust) 3.5px 5px);
+}
+
+/* 狗戴耳机 */
+.cast__phones{
+  position:absolute; left:50%; top:-13%; width:58%; margin-left:-29%;
+  z-index:3; pointer-events:none;
+  opacity:0; transform:translateY(6px) rotate(-4deg);
+  transition:opacity .5s, transform .5s;
+}
+.cast__phones.is-in{ opacity:1; transform:none; }
+.cast__phones svg{ width:100%; height:auto; display:block; overflow:visible; }
+.cast__phones .ph-cup{ fill:#2b2620; }
+.cast__phones .ph-pad{ fill:#4a4038; }
+.cast__phones .ph-band{ fill:none; stroke:#2b2620; stroke-width:7; stroke-linecap:round; }
+.cast__main.is-listening img{ animation:breathe 2.4s ease-in-out infinite; }
+/* 星图筛选 */
+.map__filter{ display:flex; gap:7px; margin-top:18px; }
+.map__chip{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+  background:none; border:1px solid var(--line); border-radius:999px;
+  padding:4px 12px; color:var(--ink-soft); cursor:pointer;
+  transition:border-color .2s, color .2s, background .2s;
+}
+.map__chip:hover{ border-color:var(--rust); color:var(--rust); }
+.map__chip.on{ background:var(--ink); border-color:var(--ink); color:var(--card); }
+/* ===========================================================
+   桌面：四样东西 = 四个功能
+   =========================================================== */
+.desk{
+  display:grid; gap:clamp(14px,1.8vw,26px);
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  max-width:820px; margin:clamp(24px,4vh,44px) 0 0;
+}
+.thing{
+  position:relative; display:flex; flex-direction:column; align-items:center; gap:8px;
+  background:none; border:0; padding:0; cursor:pointer; font:inherit; color:inherit;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.thing:hover{ transform:translateY(-7px); }
+.thing__art{
+  position:relative; display:grid; place-items:center;
+  width:100%; aspect-ratio:1; border-radius:16px;
+  background:rgba(251,246,232,.5);
+  border:1px solid var(--line);
+  transition:border-color .3s, background .3s, box-shadow .3s;
+}
+.thing:hover .thing__art{
+  border-color:var(--rust); background:var(--card);
+  box-shadow:0 18px 30px -22px rgba(60,44,26,.6);
+}
+.thing__art img{ width:78%; height:78%; object-fit:contain; display:block; }
+.thing b{ font-family:var(--serif); font-size:15px; font-weight:900; }
+.thing em{
+  font-style:normal; font-family:var(--mono); font-size:9px;
+  letter-spacing:.1em; color:var(--ink-faint); text-align:center;
+}
+.thing__art svg{ width:74%; height:74%; }
+
+/* 一叠碎纸 */
+.pile{
+  position:absolute; width:46%; height:58%; left:27%; top:21%;
+  background:var(--card); border:1px solid var(--line);
+  box-shadow:0 6px 10px -8px rgba(60,44,26,.5);
+}
+.p1{ transform:rotate(-9deg); }
+.p2{ transform:rotate(4deg) translateY(3px); }
+.p3{
+  transform:rotate(-2deg) translateY(-3px);
+  background:repeating-linear-gradient(180deg, transparent 0 6px, rgba(194,82,58,.22) 6px 7px);
+}
+
+/* 狗狗那格 */
+.thing--dog .thing__art img{ width:72%; height:72%; }
+
+/* ===========================================================
+   换幕：按去向做不同的转场
+   =========================================================== */
+.fx{
+  position:fixed; inset:0; z-index:150; pointer-events:none;
+  opacity:0;
+}
+.fx.run{ opacity:1; animation:fxHide .95s ease forwards; }
+@keyframes fxHide{ 0%,72%{ opacity:1 } 100%{ opacity:0; visibility:hidden } }
+.fx__layer{
+  position:absolute; inset:0;
+  clip-path:circle(0% at var(--ox,50%) var(--oy,50%));
+}
+.fx.run .fx__layer{
+  animation:fxSpread .82s cubic-bezier(.6,0,.3,1) forwards;
+}
+@keyframes fxSpread{
+  0%  { clip-path:circle(0% at var(--ox,50%) var(--oy,50%)); }
+  100%{ clip-path:circle(148% at var(--ox,50%) var(--oy,50%)); }
+}
+
+/* 碎纸：白纸铺开，带一点纤维 */
+.fx--paper .fx__layer{
+  background:
+    radial-gradient(120% 120% at 30% 20%, #fffdf6, var(--card) 60%),
+    var(--card);
+}
+/* 星图：墨色底 + 星点 */
+.fx--map .fx__layer{
+  background:
+    radial-gradient(circle at 22% 30%, rgba(223,162,63,.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 18%, rgba(194,82,58,.85) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 62%, rgba(126,144,112,.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 40% 74%, rgba(223,162,63,.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 86% 84%, rgba(223,162,63,.7) 0 2px, transparent 3px),
+    #221d19;
+  background-size:auto, auto, auto, auto, auto;
+}
+/* 唱机：黑胶纹路从点击处铺开 */
+.fx--disc .fx__layer{
+  background:repeating-radial-gradient(circle at var(--ox,50%) var(--oy,50%),
+    #16120f 0 3px, #241f1b 3px 7px, #1a1613 7px 10px);
+}
+.fx--disc.run .fx__layer::after{
+  content:""; position:absolute; inset:0;
+  background:conic-gradient(from 0deg at var(--ox,50%) var(--oy,50%),
+    rgba(255,240,220,0) 0deg, rgba(255,240,220,.10) 30deg, rgba(255,240,220,0) 70deg);
+  animation:fxSpin 1.2s linear;
+}
+@keyframes fxSpin{ to{ transform:rotate(220deg) } }
+
+@media (prefers-reduced-motion: reduce){
+  .fx{ display:none; }
+}
+/* 真黑胶盘（素材） */
+.vinyl{ overflow:hidden; }
+.vinyl__img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block; border-radius:50%;
+  filter:saturate(.92) contrast(1.02);
+}
+.vinyl::after{ z-index:2; }
+.vinyl__label{ z-index:3; inset:34%; }
+.vinyl__label::after{ z-index:4; }
+/* ===========================================================
+   首页：印章
+   =========================================================== */
+.stamp{
+  position:absolute; right:clamp(8px,3vw,60px); top:clamp(80px,14vh,150px);
+  width:clamp(88px,9vw,132px); aspect-ratio:1;
+  display:grid; place-content:center; gap:2px; text-align:center;
+  transform:rotate(-9deg);
+  border:2px solid var(--rust); border-radius:10%;
+  color:var(--rust);
+  box-shadow:inset 0 0 0 3px rgba(194,82,58,0), inset 0 0 0 4px var(--rust);
+  opacity:.9;
+  animation:stampIn .7s cubic-bezier(.2,1.4,.4,1) both;
+}
+@keyframes stampIn{
+  0%{ opacity:0; transform:rotate(-9deg) scale(1.6) }
+  60%{ opacity:1; transform:rotate(-11deg) scale(.94) }
+  100%{ opacity:.9; transform:rotate(-9deg) scale(1) }
+}
+.stamp__cn{
+  font-family:var(--serif); font-size:clamp(17px,1.9vw,26px); font-weight:900;
+  letter-spacing:.08em; line-height:1.1;
+}
+.stamp__no{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.06em;
+  border-top:1px solid currentColor; padding-top:3px;
+}
+
+/* ===========================================================
+   入口转场：物件散开
+   =========================================================== */
+.fx{ position:fixed; inset:0; z-index:150; pointer-events:none; }
+.fx__layer{ position:absolute; inset:0; opacity:0; }
+.fx.run .fx__layer{ opacity:1; animation:fxSpread .78s cubic-bezier(.6,0,.3,1) forwards; }
+@keyframes fxSpread{
+  0%  { clip-path:circle(0% at var(--ox,50%) var(--oy,50%)) }
+  100%{ clip-path:circle(148% at var(--ox,50%) var(--oy,50%)) }
+}
+
+/* 飞出来的小东西 */
+.bit{
+  position:fixed; z-index:151; pointer-events:none;
+  left:0; top:0; will-change:transform, opacity;
+}
+.bit--paper{
+  width:16px; height:20px; background:var(--card);
+  border:1px solid var(--line);
+  box-shadow:0 3px 6px -4px rgba(60,44,26,.6);
+}
+.bit--dot{ width:8px; height:8px; border-radius:50%; }
+.bit--note{
+  width:10px; height:10px; border-radius:50%;
+  background:var(--rust);
+}
+.bit--ring{
+  width:40px; height:40px; border-radius:50%;
+  border:1.5px solid rgba(43,38,32,.35);
+}
+
+/* ===========================================================
+   播放条收起
+   =========================================================== */
+.radio{ transition:transform .55s cubic-bezier(.2,.8,.2,1), max-height .45s ease; }
+.radio__fold{
+  margin-left:auto; background:none; border:1px solid var(--line);
+  border-radius:50%; width:26px; height:26px; line-height:1;
+  color:var(--ink-soft); cursor:pointer; font-size:13px;
+  transition:border-color .2s, color .2s, transform .3s;
+}
+.radio__fold:hover{ border-color:var(--rust); color:var(--rust); }
+.radio__close{ margin-left:8px; }
+.radio.is-folded{ max-height:66px; overflow:hidden; }
+.radio.is-folded .radio__fold{ transform:rotate(180deg); }
+.radio.is-folded .radio__stage{ opacity:.35; pointer-events:none; }
+.radio.is-folded .radio__stage{ transition:opacity .3s; }
+/* ===========================================================
+   云朵气泡
+   =========================================================== */
+.bubble{
+  background:none; border:0; box-shadow:none;
+  padding:0;
+  filter:drop-shadow(0 0 .6px rgba(150,132,104,.95))
+         drop-shadow(0 14px 22px rgba(60,44,26,.2));
+}
+.bubble__body{
+  position:relative; z-index:2;
+  padding:15px 20px 14px;
+  background:var(--card);
+  border-radius:26px;
+}
+.puff{
+  position:absolute; z-index:1; display:block;
+  background:var(--card);
+}
+.puff--a{ width:38px; height:38px; border-radius:50%; left:-8px;  bottom:-10px; }
+.puff--b{ width:26px; height:26px; border-radius:50%; left:26px;  bottom:-16px; }
+.puff--c{ width:18px; height:18px; border-radius:50%; left:56px;  bottom:-20px; }
+.puff--d{ width:30px; height:30px; border-radius:50%; right:-6px; top:-12px; }
+.bubble.is-in .puff--a{ animation:puffFloat 3.2s ease-in-out infinite; }
+.bubble.is-in .puff--b{ animation:puffFloat 3.6s ease-in-out .3s infinite; }
+.bubble.is-in .puff--c{ animation:puffFloat 4s ease-in-out .6s infinite; }
+@keyframes puffFloat{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-4px) } }
+
+/* ===========================================================
+   桌面：散着放，不像四宫格
+   =========================================================== */
+.desk{
+  display:flex; align-items:flex-end; gap:clamp(18px,2.4vw,34px);
+  margin:clamp(26px,4.2vh,48px) 0 0;
+  max-width:860px;
+}
+.thing{ width:auto; flex:none; transform:rotate(var(--rot,0deg)); }
+.thing:nth-child(1){ --rot:-3deg; }
+.thing:nth-child(2){ --rot:2deg; }
+.thing:nth-child(2) .thing__art{ transform:translateY(-20px); }
+.thing:nth-child(3){ --rot:-1.5deg; }
+.thing:nth-child(4){ --rot:3deg; }
+.thing:nth-child(4) .thing__art{ transform:translateY(-10px); }
+.thing:nth-child(1) .thing__art{ width:clamp(120px,12vw,168px); }
+.thing:nth-child(2) .thing__art{ width:clamp(104px,10vw,142px); }
+.thing:nth-child(3) .thing__art{ width:clamp(146px,15vw,208px); }
+.thing:nth-child(4) .thing__art{ width:clamp(108px,11vw,150px); }
+.thing:hover{ transform:rotate(0deg) translateY(-10px) scale(1.03); }
+.thing__art{
+  border-radius:20px;
+  box-shadow:0 10px 18px -16px rgba(60,44,26,.5);
+}
+
+/* 回桌面 */
+.back{
+  position:fixed; left:clamp(20px,4vw,56px); bottom:22px; z-index:70;
+  padding:7px 15px; border-radius:999px; cursor:pointer;
+  background:rgba(251,246,232,.86); border:1px solid var(--line);
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; color:var(--ink-soft);
+  backdrop-filter:blur(6px);
+  opacity:0; pointer-events:none; transform:translateY(6px);
+  transition:opacity .3s, transform .3s, border-color .2s, color .2s;
+}
+.back.is-on{ opacity:1; pointer-events:auto; transform:none; }
+.back:hover{ border-color:var(--rust); color:var(--rust); }
+
+/* 选狗 */
+.picker{
+  position:fixed; z-index:130; display:none;
+  padding:10px; gap:8px; grid-template-columns:repeat(4, 46px);
+  background:var(--card); border:1px solid var(--line); border-radius:16px;
+  box-shadow:0 18px 30px -20px rgba(60,44,26,.6);
+}
+.picker.is-open{ display:grid; }
+.picker button{
+  width:46px; height:46px; padding:2px; border-radius:12px; cursor:pointer;
+  background:var(--paper-2); border:1px solid transparent;
+  transition:border-color .2s, transform .2s;
+}
+.picker button:hover{ border-color:var(--rust); transform:translateY(-2px); }
+.picker img{ width:100%; height:100%; object-fit:contain; display:block; }
+/* ===========================================================
+   第三幕：整页唱机
+   =========================================================== */
+.studio{
+  display:grid; grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);
+  gap:clamp(20px,3vw,44px); align-items:start;
+  max-width:1180px;
+}
+.radio-dock{ min-height:360px; }
+
+/* 停靠态：不再浮在底部，变成版面里的一块 */
+.radio--docked{
+  position:static; transform:none !important;
+  max-height:none; padding:0;
+  display:flex;
+}
+.radio--docked .radio__paper{ display:none; }
+.radio--docked .radio__stage{
+  width:100%;
+  padding:clamp(16px,2vw,26px);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:6px;
+}
+.radio--docked .turntable{ width:clamp(150px,15vw,210px); }
+.radio--docked .radio__lines{ max-height:none; }
+.radio--docked .radio__body{ min-height:0; }
+
+/* 右侧期数列表 */
+.studio__list{ display:flex; flex-direction:column; gap:10px; }
+.studio__list .episode{
+  padding:16px 16px 14px; background:var(--paper-2);
+  border:1px solid var(--line); border-radius:4px; cursor:pointer;
+  transition:border-color .25s, transform .3s, background .25s;
+}
+.studio__list .episode:hover{ border-color:var(--rust); transform:translateX(4px); }
+.studio__list .episode.is-on{ background:var(--card); border-color:var(--rust); }
+.studio__list .episode__q{ font-size:16px; margin:5px 0 8px; line-height:1.4; }
+.studio__list .episode__meta{ font-size:9.5px; }
+.studio__list .episode__play{ margin-top:10px; font-size:10.5px; }
+.studio__list .episode__badge{ display:none; }
